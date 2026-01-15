@@ -9,8 +9,14 @@ const PROJECTS = [
     name: 'Property Shop Investment',
     folders: [
       { id: 'home', name: 'Home Page' },
-      { id: 'luxury', name: 'Luxury Projects' },
-      { id: 'contact', name: 'Contact Us' }
+      { id: 'contact-us', name: 'Contact Us' },
+      { id: 'about-us', name: 'About Us' },
+      { id: 'careers', name: 'Careers' },
+      { id: 'luxury-projects', name: 'Luxury Projects' },
+      { id: 'sales-services', name: 'Sales Services' },
+      { id: 'property-management', name: 'Property Management' },
+      { id: 'off-plan-projects', name: 'Off-Plan Projects' },
+      { id: 'mortgage-solutions', name: 'Mortgage Solutions' }
     ]
   }
 ];
