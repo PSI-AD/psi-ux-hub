@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera } from 'lucide-react';
+import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // GEMINI SETUP
@@ -28,7 +28,11 @@ const S = {
   card: { background: '#1e293b', borderRadius: '24px', padding: '40px', border: '1px solid #334155', width: '100%', marginBottom: '32px' },
   splitView: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' },
   label: { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: '12px' },
-  dropZone: { width: '100%', background: '#0f172a', border: '2px dashed #334155', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', minHeight: '180px', position: 'relative' as const },
+  dropZone: { width: '100%', background: '#0f172a', border: '2px dashed #334155', borderRadius: '16px', padding: '0', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', minHeight: '240px', position: 'relative' as const, overflow: 'hidden' },
+  dropZoneContent: { padding: '32px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', width: '100%', zIndex: 10 },
+  thumbnail: { position: 'absolute' as const, top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' as const, opacity: 0.6, filter: 'blur(2px)' },
+  thumbnailLabel: { background: 'rgba(0,0,0,0.7)', color: 'white', padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 'bold', marginTop: 16 },
+
   button: { width: '100%', background: '#10b981', color: 'white', border: 'none', padding: '20px', fontSize: '16px', fontWeight: 'bold', borderRadius: '12px', cursor: 'pointer', transition: 'transform 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
 
   resultBox: { marginTop: '40px', background: '#0f172a', borderRadius: '16px', padding: '0', border: '1px solid #334155', overflow: 'hidden' },
@@ -45,6 +49,7 @@ const S = {
   codePre: { fontFamily: 'monospace', fontSize: '13px', color: '#d4d4d4', margin: 0 }
 };
 
+// --- HELPER TO CONVERT FILE TO GEMINI PART ---
 async function fileToGenerativePart(file: File) {
   return new Promise<any>((resolve, reject) => {
     const reader = new FileReader();
@@ -73,13 +78,16 @@ type AuditFinding = {
 
 const App = () => {
   const [activePage, setActivePage] = useState('home');
-  const [mode, setMode] = useState<'standard' | 'competitor'>('standard');
+  const [mode, setMode] = useState<'standard' | 'competitor'>('competitor'); // Default to competitor per request
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingCode, setGeneratingCode] = useState<string | null>(null);
 
-  // Inputs
+  // Inputs & Previews
   const [file1, setFile1] = useState<File | null>(null);
+  const [preview1, setPreview1] = useState<string | null>(null);
+
   const [file2, setFile2] = useState<File | null>(null);
+  const [preview2, setPreview2] = useState<string | null>(null);
 
   // Results
   const [findings, setFindings] = useState<AuditFinding[]>([]);
@@ -88,9 +96,26 @@ const App = () => {
   const inputRef1 = useRef<HTMLInputElement>(null);
   const inputRef2 = useRef<HTMLInputElement>(null);
 
+  // Clean URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (preview1) URL.revokeObjectURL(preview1);
+      if (preview2) URL.revokeObjectURL(preview2);
+    };
+  }, [preview1, preview2]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, slot: 1 | 2) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      const url = URL.createObjectURL(f);
+      if (slot === 1) { setFile1(f); setPreview1(url); }
+      else { setFile2(f); setPreview2(url); }
+    }
+  };
+
   const handleAudit = async () => {
     if (!file1 && !file2) {
-      alert("Please upload at least one screenshot.");
+      alert("Please upload at least one screenshot to analyze.");
       return;
     }
 
@@ -104,18 +129,19 @@ const App = () => {
       if (mode === 'competitor') {
         prompt = `
                 Act as a Senior UX Strategist & Technical Lead. 
-                COMPARE these two screenshots:
-                1. First Image: PSI (My Site)
-                2. Second Image: Competitor
+                COMPARE these two UI screenshots.
+                1. First Image: Our Page (psinv.net)
+                2. Second Image: Competitor Page
                 
-                Identify 3 critical UX gaps where PSI is lacking.
-                If the image is a PageSpeed score, READ the metrics (LCP, CLS) and provide fixes.
+                Analyze layout, CTA placement, and trust signals.
+                1. List what the competitor does better.
+                2. Provide the EXACT Tailwind/React code to implement that improvement on psinv.net.
 
                 For each finding, provide:
-                1. 'title': The Issue
-                2. 'description': Why the competitor is better or what is wrong.
-                3. 'technicalSolution': Specific React/Tailwind technical approach.
-                4. 'implementationPrompt': A specific instruction I can copy to an AI coder to fix this file.
+                1. 'title': The Issue / Gap
+                2. 'description': Why the competitor wins here.
+                3. 'technicalSolution': The exact React approach (e.g. "Use flex-row with sticky positioning").
+                4. 'implementationPrompt': A command starting with "Apply this UI update to [filename]..."
 
                 Return a strictly valid JSON array of objects: 
                 [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
@@ -129,16 +155,15 @@ const App = () => {
       } else {
         prompt = `
                 Act as a Senior UX Strategist. 
-                Analyze this screenshot (it could be a UI or a PageSpeed Report).
-                If it's PageSpeed: Read the LCP, CLS, and TBT numbers.
-                If it's UI: Identify friction points.
+                Analyze this design/audit screenshot.
+                Identify critical UX friction points.
+                If it's a PageSpeed score, read the numbers.
 
-                Identify exactly 3 critical issues.
                 For each finding, provide:
                 1. 'title': The Issue
-                2. 'description': Impact on user/performance.
+                2. 'description': Impact on user.
                 3. 'technicalSolution': React/Tailwind fix.
-                4. 'implementationPrompt': Specific instruction for an AI coder.
+                4. 'implementationPrompt': A command: "Apply this UI update to [filename]..."
 
                 Return a strictly valid JSON array of objects: 
                 [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
@@ -181,8 +206,7 @@ const App = () => {
             Requirements:
             1. Create a complete, functional React functional component.
             2. Use Tailwind CSS for styling (Modern, Dark Mode compatible).
-            3. Use 'lucide-react' for icons.
-            4. Return ONLY the code.
+            3. Return ONLY the code.
           `;
 
       const result = await model.generateContent(prompt);
@@ -199,9 +223,9 @@ const App = () => {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert("Prompt Copied to Clipboard!");
+  const copyPrompt = (prompt: string) => {
+    navigator.clipboard.writeText(prompt);
+    alert("Prompt Copied! Paste this to Anti-Gravity.");
   };
 
   return (
@@ -224,7 +248,7 @@ const App = () => {
       <main style={S.main}>
         <header style={S.header}>
           <div>
-            <div style={S.subtitle}>Implementation Engine</div>
+            <div style={S.subtitle}>Implementation Engine v4.0</div>
             <h1 style={S.title}>{mode === 'competitor' ? 'Competitive Benchmarking' : 'Forensic Audit'}</h1>
           </div>
           {/* COMPARISON TOGGLE */}
@@ -239,7 +263,7 @@ const App = () => {
               onClick={() => setMode('competitor')}
               style={{ ...S.modeBtn, ...(mode === 'competitor' ? S.modeBtnActive : {}) }}
             >
-              Competitor vs Mode
+              Competitor Mode
             </button>
           </div>
         </header>
@@ -251,18 +275,24 @@ const App = () => {
               <div>
                 <div style={{ ...S.label, color: '#10b981' }}>PSI SCREENSHOT / PAGESPEED</div>
                 <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
-                  <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => setFile1(e.target.files?.[0] || null)} />
-                  {file1 ? <CheckCircle2 size={40} color="#10b981" /> : <Upload size={40} color="#475569" />}
-                  <div style={{ marginTop: 16, fontSize: 13, color: '#94a3b8' }}>{file1?.name || "Drop PSI Image"}</div>
+                  {preview1 && <img src={preview1} style={S.thumbnail} />}
+                  <div style={S.dropZoneContent}>
+                    <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => handleFileChange(e, 1)} />
+                    {preview1 ? <CheckCircle2 size={40} color="#10b981" /> : <Upload size={40} color="#475569" />}
+                    <div style={S.thumbnailLabel}>{file1?.name || "Drop PSI Image"}</div>
+                  </div>
                 </div>
               </div>
               {/* COMPETITOR */}
               <div>
                 <div style={{ ...S.label, color: '#f59e0b' }}>COMPETITOR SCREENSHOT</div>
                 <div style={S.dropZone} onClick={() => inputRef2.current?.click()}>
-                  <input type="file" ref={inputRef2} style={{ display: 'none' }} onChange={e => setFile2(e.target.files?.[0] || null)} />
-                  {file2 ? <CheckCircle2 size={40} color="#10b981" /> : <Swords size={40} color="#475569" />}
-                  <div style={{ marginTop: 16, fontSize: 13, color: '#94a3b8' }}>{file2?.name || "Drop Competitor Image"}</div>
+                  {preview2 && <img src={preview2} style={S.thumbnail} />}
+                  <div style={S.dropZoneContent}>
+                    <input type="file" ref={inputRef2} style={{ display: 'none' }} onChange={e => handleFileChange(e, 2)} />
+                    {preview2 ? <CheckCircle2 size={40} color="#10b981" /> : <Swords size={40} color="#475569" />}
+                    <div style={S.thumbnailLabel}>{file2?.name || "Drop Competitor Image"}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -270,9 +300,12 @@ const App = () => {
             <div style={{ marginBottom: 32 }}>
               <div style={S.label}>TARGET EVIDENCE (UI or Report)</div>
               <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
-                <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => setFile1(e.target.files?.[0] || null)} />
-                {file1 ? <CheckCircle2 size={40} color="#10b981" /> : <Camera size={40} color="#475569" />}
-                <div style={{ marginTop: 16, fontWeight: 500, color: '#94a3b8' }}>{file1?.name || "Drop Screenshot of UI or PageSpeed"}</div>
+                {preview1 && <img src={preview1} style={S.thumbnail} />}
+                <div style={S.dropZoneContent}>
+                  <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => handleFileChange(e, 1)} />
+                  {preview1 ? <CheckCircle2 size={40} color="#10b981" /> : <Camera size={40} color="#475569" />}
+                  <div style={S.thumbnailLabel}>{file1?.name || "Drop Screenshot of UI or PageSpeed"}</div>
+                </div>
               </div>
             </div>
           )}
@@ -310,8 +343,8 @@ const App = () => {
                 </div>
 
                 <div style={S.actionRow}>
-                  <button onClick={() => copyToClipboard(f.implementationPrompt)} style={S.copyBtn}>
-                    <Copy size={14} /> Copy Copy Prompt
+                  <button onClick={() => copyPrompt(f.implementationPrompt)} style={S.copyBtn}>
+                    <Terminal size={14} /> Copy for Anti-Gravity
                   </button>
                   <button
                     onClick={() => generateCode(f, i)}
