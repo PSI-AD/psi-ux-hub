@@ -1,4 +1,5 @@
 
+console.log("APP BOOTING: App.tsx loaded");
 import React, { useState } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Workspace from './components/dashboard/Workspace';
