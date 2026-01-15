@@ -16,7 +16,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
  * AGENT 1: VISUAL STRATEGIST
  * Analyzes screenshots for UX/UI improvements
  */
-export async function analyzeImage(imageFile: File, promptText: string) {
+export async function runRealEstateAnalysis(imageFile: any, promptText: any) {
   try {
     // Convert File to Base64 for Gemini
     const base64Data = await fileToGenerativePart(imageFile);
@@ -28,7 +28,7 @@ export async function analyzeImage(imageFile: File, promptText: string) {
 
     const response = await result.response;
     const text = response.text();
-    
+
     // Clean up JSON formatting if Gemini adds markdown blocks
     const cleanText = text.replace(/```json|```/g, "").trim();
     return JSON.parse(cleanText);
@@ -45,7 +45,7 @@ export async function analyzeImage(imageFile: File, promptText: string) {
  */
 export async function generateFeatureCode(featureName: string, description: string, designSystem?: any) {
   try {
-    const designContext = designSystem 
+    const designContext = designSystem
       ? `Use these colors: ${designSystem.colors?.join(', ')}. Font: ${designSystem.typography}.`
       : "Use standard Tailwind CSS with blue-600 as primary.";
 
@@ -83,7 +83,7 @@ async function fileToGenerativePart(file: File) {
       const base64String = reader.result as string;
       // Remove the "data:image/jpeg;base64," part
       const base64Content = base64String.split(",")[1];
-      
+
       resolve({
         inlineData: {
           data: base64Content,
