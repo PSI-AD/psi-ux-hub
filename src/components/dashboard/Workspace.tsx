@@ -62,186 +62,128 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
     }
   };
 
-  const handleJsonUpload = async (file: File) => {
+  /* 
+   * UNIFIED AUDIT HANDLER 
+   * Determines if input is URL (PSI/Direct) or File (Image/JSON) 
+   * and routes to appropriate Gemini service.
+   */
+  const handleDeepAudit = async () => {
     if (!activeProject || !activeFolder) return;
     setIsAnalyzing(true);
     setCurrentReport(null);
 
     try {
-      const text = await file.text();
-      const json = JSON.parse(text);
-
-      // 1. Parse Local Data
-      const parsedData = parseLighthouseJson(json);
-
-      // 2. Run Gemini Technical Analysis
-      const aiAnalysis = await runTechnicalAnalysis(parsedData);
-
-      // Merge AI findings into result
-      const result: AnalysisResult = {
-        lighthouse_score: parsedData.score,
-        lighthouse_metrics: parsedData.metrics,
-        findings: [], // Filled by Visual, but Tech uses different structure usually. 
-        // We might need to adapt ReportDisplay or just map technical_fixes to findings?
-        // For now, let's map technical fixes to findings for UI compatibility
-        analysis_type: 'lighthouse',
-        executive_summary: aiAnalysis.executive_summary
-      };
-
-      // Map tech fixes to findings format
-      if (aiAnalysis.technical_fixes) {
-        result.findings = aiAnalysis.technical_fixes.map((fix: any) => ({
-          issue_title: fix.issue,
-          visual_explanation: `Fix Strategy: ${fix.fix_strategy}. Impact: ${fix.impact}`,
-          real_estate_impact: `Target File: ${fix.file_target}`, // Abusing field for file target
-          solution_code_react: fix.code_snippet
-        }));
-      }
-
-      // 3. Persist
-      const pId = await DBService.createProject(activeProject.name);
-      const fId = await DBService.createPage(pId, activeFolder.name);
-
-      await DBService.createTask(pId, fId, {
-        title: `Deep Audit: ${file.name}`,
-        type: 'lighthouse_speed',
-        status: 'done',
-        assets: {
-          lighthouseJson: parsedData.metrics
-        },
-        aiResult: result
-      });
-
-      setCurrentReport(result);
-      loadHistory();
-
-    } catch (e: any) {
-      alert("Failed to process Deep Audit: " + e.message);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-  const handleExternalReportImport = async () => {
-    if (!activeProject || !activeFolder || !myPageInput) return;
-    setIsAnalyzing(true);
-    setCurrentReport(null);
-
-    try {
-      // Run Gemini External Analysis
-      const aiAnalysis = await runExternalPsiAnalysis(myPageInput);
-
-      // Merge AI findings into result
-      const result: AnalysisResult = {
-        lighthouse_score: 54, // Hardcoded from user prompt instructions
-        lighthouse_metrics: { lcp: '15.3s', cls: '0.05', fid: 'N/A', inp: 'N/A' }, // User context
-        findings: [],
-        analysis_type: 'lighthouse',
-        executive_summary: aiAnalysis.executive_summary
-      };
-
-      // Map tech fixes to findings format
-      if (aiAnalysis.technical_fixes) {
-        result.findings = aiAnalysis.technical_fixes.map((fix: any) => ({
-          issue_title: fix.issue,
-          visual_explanation: `Fix Strategy: ${fix.fix_strategy}. Impact: ${fix.impact}`,
-          real_estate_impact: `Target File: ${fix.file_target}`,
-          solution_code_react: fix.code_snippet
-        }));
-      }
-
-      // 3. Persist
-      const pId = await DBService.createProject(activeProject.name);
-      const fId = await DBService.createPage(pId, activeFolder.name);
-
-      await DBService.createTask(pId, fId, {
-        title: `PSI Import: ${new URL(myPageInput).pathname.split('/').pop() || 'Report'}`,
-        type: 'lighthouse_speed',
-        status: 'done',
-        assets: {
-          lighthouseJson: {} // No raw JSON in this mode
-        },
-        aiResult: result
-      });
-
-      setCurrentReport(result);
-      loadHistory();
-
-    } catch (e: any) {
-      alert("Failed to import PSI Report: " + e.message);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  const handleRunAnalysis = async () => {
-    if (!activeProject || !activeFolder) return;
-
-    setIsAnalyzing(true);
-    setCurrentReport(null);
-
-    try {
-      let result: AnalysisResult;
-      const type = activeTab === "visual" ? "visual" : "performance";
-
-      // 1. Run AI Analysis (Bypassing PageSpeed API entirely)
-      if (type === "performance") {
-        if (!myPageInput) throw new Error("URL required for visual audit.");
-
-        // DIRECT CALL TO GEMINI
-        result = await runVisualAudit(myPageInput);
-        result.analysis_type = 'lighthouse'; // Mocking the type for existing UI compatibility
-
-      } else {
-        // Visual (Screenshot Based)
-        const inputSource = myFile || myPageInput;
-        if (!inputSource) throw new Error("Image or URL required for visual audit.");
-
-        result = await runRealEstateAnalysis('visual', {
-          myPage: inputSource,
-          competitor: compFile || undefined
-        });
-      }
-
-      // 2. Persist to Database
-      const pId = await DBService.createProject(activeProject.name);
-      const fId = await DBService.createPage(pId, activeFolder.name);
-
-      // Upload Files
-      let myAssetUrl = myPageInput;
+      // CASE 1: File Upload (JSON or Image)
       if (myFile) {
-        myAssetUrl = await DBService.uploadCleanFile(myFile, pId, fId, 'my-page');
+        if (myFile.name.endsWith('.json')) {
+          await handleJsonUpload(myFile); // Route to technical parser
+        } else {
+          // Image -> Vision
+          const result = await runRealEstateAnalysis('visual', {
+            myPage: myFile,
+            competitor: undefined
+          });
+          await persistResult(result, 'Visual Strategy Audit', 'competitor_audit', { myScreenshotUrl: await DBService.uploadCleanFile(myFile, activeProject.id, activeFolder.id, 'my-page') });
+        }
       }
-      let compAssetUrl = '';
-      if (compFile) {
-        compAssetUrl = await DBService.uploadCleanFile(compFile, pId, fId, 'competitor');
+      // CASE 2: URL Input
+      else if (myPageInput) {
+        // Is it a PageSpeed Report URL?
+        if (myPageInput.includes('pagespeed.web.dev') || myPageInput.includes('lighthouse')) {
+          await handleExternalReportImport();
+        } else {
+          // Treats as simple visual audit trigger
+          // For simplicity, we assume user wants the external report logic if they pasted a link, 
+          // OR we can default to the "Visual Strategy" but fetching from URL. 
+          // Let's use runVisualAudit for direct sites.
+          const result = await runVisualAudit(myPageInput);
+          result.analysis_type = 'lighthouse';
+
+          // Persist
+          await persistResult(result, `Visual UX Audit: ${new URL(myPageInput).hostname}`, 'lighthouse_speed', { myScreenshotUrl: myPageInput });
+        }
       }
-
-      // Create Task Record
-      await DBService.createTask(pId, fId, {
-        title: type === 'performance' ? `Visual UX Audit: ${new URL(myPageInput).hostname}` : 'Visual Strategy Audit',
-        type: type === 'performance' ? 'lighthouse_speed' : 'competitor_audit',
-        status: 'done',
-        assets: {
-          myScreenshotUrl: myAssetUrl,
-          competitorScreenshotUrl: compAssetUrl,
-          // lighthouseJson: result.lighthouse_metrics // Removed real data dependence
-        },
-        aiResult: result
-      });
-
-      // Update Local State
-      setCurrentReport(result);
-      setCurrentReportImage(myFile || myPageInput); // For overlay display
-      loadHistory(); // Refresh feed
 
     } catch (e: any) {
-      // Simple Alert for any errors, no more 403 handling needed
-      alert(e.message);
+      alert("Audit Failed: " + e.message);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
+  // Helper to standardise persistence since we removed duplicated code
+  const persistResult = async (result: AnalysisResult, title: string, type: 'lighthouse_speed' | 'competitor_audit', assets: any) => {
+    if (!activeProject || !activeFolder) return;
+    const pId = await DBService.createProject(activeProject.name);
+    const fId = await DBService.createPage(pId, activeFolder.name);
+
+    await DBService.createTask(pId, fId, {
+      title,
+      type,
+      status: 'done',
+      assets,
+      aiResult: result
+    });
+
+    setCurrentReport(result);
+    if (assets.myScreenshotUrl && typeof assets.myScreenshotUrl === 'object') {
+      // It's a file, we already uploaded it? 
+      // No, in persistResult call above we awaited upload.
+      // But for openReport logic, we need to know.
+      setCurrentReportImage(assets.myScreenshotUrl);
+    } else {
+      setCurrentReportImage(assets.myScreenshotUrl || myPageInput);
+    }
+    loadHistory();
+  };
+
+
+  // Legacy handlers adapted or called by Unified Handler
+  const handleJsonUpload = async (file: File) => {
+    // ... (Use existing logic but return result instead of setting state directly if we want cleaner flow, 
+    // but existing function sets state. We can keep it side-effect based for now since it's referenced by handleDeepAudit)
+    // Actually, I need to copy the logic here or keep the old function. 
+    // I am REPLACING the old function block, so I must re-declare it or inline it.
+    // Let's re-declare simplified versions.
+
+    const text = await file.text();
+    const json = JSON.parse(text);
+    const parsedData = parseLighthouseJson(json);
+    const aiAnalysis = await runTechnicalAnalysis(parsedData);
+
+    const result: AnalysisResult = {
+      lighthouse_score: parsedData.score,
+      lighthouse_metrics: parsedData.metrics,
+      findings: aiAnalysis.technical_fixes ? aiAnalysis.technical_fixes.map((fix: any) => ({
+        issue_title: fix.issue,
+        visual_explanation: `Fix Strategy: ${fix.fix_strategy}`,
+        real_estate_impact: `Target: ${fix.file_target}`,
+        solution_code_react: fix.code_snippet
+      })) : [],
+      analysis_type: 'lighthouse',
+      executive_summary: aiAnalysis.executive_summary
+    };
+
+    await persistResult(result, `Deep Audit: ${file.name}`, 'lighthouse_speed', { lighthouseJson: parsedData.metrics });
+  };
+
+  const handleExternalReportImport = async () => {
+    const aiAnalysis = await runExternalPsiAnalysis(myPageInput);
+    const result: AnalysisResult = {
+      lighthouse_score: 54, // Hardcoded context
+      lighthouse_metrics: { lcp: '15.3s', cls: '0.05', fid: 'N/A', inp: 'N/A' },
+      findings: aiAnalysis.technical_fixes ? aiAnalysis.technical_fixes.map((fix: any) => ({
+        issue_title: fix.issue,
+        visual_explanation: `Fix Strategy: ${fix.fix_strategy}`,
+        real_estate_impact: `Target: ${fix.file_target}`,
+        solution_code_react: fix.code_snippet
+      })) : [],
+      analysis_type: 'lighthouse',
+      executive_summary: aiAnalysis.executive_summary
+    };
+
+    await persistResult(result, `PSI Import: ${new URL(myPageInput).pathname.split('/').pop() || 'Report'}`, 'lighthouse_speed', {});
+  };
   const openReport = (task: Task) => {
     if (task.aiResult) {
       setCurrentReport(task.aiResult);
