@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Upload, Zap, Search, ArrowRight, Clock, CheckCircle2, AlertTriangle, LayoutTemplate, Loader2, Link as LinkIcon, Plus, Eye } from "lucide-react";
 import { clsx } from "clsx";
 import { Project, Folder, AnalysisResult, Task } from "../../types";
-import { runRealEstateAnalysis, runVisualAudit } from "../../services/gemini"; // Import new function
-// import { runPageSpeedAudit } from "../../services/pagespeed"; // REMOVE THIS
+import { runRealEstateAnalysis, runVisualAudit, runTechnicalAnalysis } from "../../services/gemini";
+import { parseLighthouseJson } from "../../services/pagespeed";
 import { DBService } from "../../services/db-service";
 import { ReportDisplay } from "../ReportDisplay";
 import { PreviewModal } from "../hub/PreviewModal";
@@ -53,6 +53,66 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
       setHistory(tasks);
     } catch (e) {
       console.error("Failed to load history", e);
+    }
+  };
+
+  const handleJsonUpload = async (file: File) => {
+    if (!activeProject || !activeFolder) return;
+    setIsAnalyzing(true);
+    setCurrentReport(null);
+
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+
+      // 1. Parse Local Data
+      const parsedData = parseLighthouseJson(json);
+
+      // 2. Run Gemini Technical Analysis
+      const aiAnalysis = await runTechnicalAnalysis(parsedData);
+
+      // Merge AI findings into result
+      const result: AnalysisResult = {
+        lighthouse_score: parsedData.score,
+        lighthouse_metrics: parsedData.metrics,
+        findings: [], // Filled by Visual, but Tech uses different structure usually. 
+        // We might need to adapt ReportDisplay or just map technical_fixes to findings?
+        // For now, let's map technical fixes to findings for UI compatibility
+        analysis_type: 'lighthouse',
+        executive_summary: aiAnalysis.executive_summary
+      };
+
+      // Map tech fixes to findings format
+      if (aiAnalysis.technical_fixes) {
+        result.findings = aiAnalysis.technical_fixes.map((fix: any) => ({
+          issue_title: fix.issue,
+          visual_explanation: `Fix Strategy: ${fix.fix_strategy}. Impact: ${fix.impact}`,
+          real_estate_impact: `Target File: ${fix.file_target}`, // Abusing field for file target
+          solution_code_react: fix.code_snippet
+        }));
+      }
+
+      // 3. Persist
+      const pId = await DBService.createProject(activeProject.name);
+      const fId = await DBService.createPage(pId, activeFolder.name);
+
+      await DBService.createTask(pId, fId, {
+        title: `Deep Audit: ${file.name}`,
+        type: 'lighthouse_speed',
+        status: 'done',
+        assets: {
+          lighthouseJson: parsedData.metrics
+        },
+        aiResult: result
+      });
+
+      setCurrentReport(result);
+      loadHistory();
+
+    } catch (e: any) {
+      alert("Failed to process Deep Audit: " + e.message);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 

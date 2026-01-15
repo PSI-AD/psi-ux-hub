@@ -122,6 +122,60 @@ export async function runVisualAudit(url: string) {
 }
 
 /**
+ * AGENT 5: TECHNICAL DEEP DIVE (JSON INGEST)
+ * Analyzes raw Lighthouse JSON to provide engineering fixes
+ */
+export async function runTechnicalAnalysis(lighthouseData: any) {
+  try {
+    const prompt = `
+      Act as a Lead Performance Engineer.
+      I am uploading a professional Lighthouse JSON report for a PSI page.
+      
+      CONTEXT:
+      Score: ${lighthouseData.score}
+      LCP: ${lighthouseData.metrics.lcp}
+      CLS: ${lighthouseData.metrics.cls}
+      
+      DATA TO ANALYZE:
+      Opportunities: ${JSON.stringify(lighthouseData.opportunities)}
+      Diagnostics: ${JSON.stringify(lighthouseData.diagnostics)}
+      
+      TASK:
+      Analyze the 'Opportunities' and 'Diagnostics' sections.
+      Provide a detailed table of technical fixes and generate the corrected React/Tailwind code for the top 3 high-impact issues.
+      
+      Return the response in this JSON format:
+      {
+        "executive_summary": {
+          "technical_health": "Critical/Moderate/Good",
+          "primary_bottleneck": "e.g. Unused JavaScript",
+          "projected_speed_gain": "e.g. 1.2s"
+        },
+        "technical_fixes": [
+          {
+            "issue": "Name of issue",
+            "impact": "High/Med/Low",
+            "fix_strategy": "Explanation",
+            "code_snippet": "React/Config code",
+            "file_target": "e.g. vite.config.ts or App.tsx"
+          }
+        ]
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const cleanText = text.replace(/```json|```/g, "").trim();
+    return JSON.parse(cleanText);
+
+  } catch (error) {
+    console.error("Gemini Tech Audit Error:", error);
+    throw error;
+  }
+}
+
+/**
  * HELPER: Convert File to Base64
  */
 async function fileToGenerativePart(file: File) {
