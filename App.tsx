@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye } from 'lucide-react';
+import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // GEMINI SETUP
@@ -21,18 +21,26 @@ const S = {
   header: { marginBottom: '40px', paddingBottom: '20px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: '#f8fafc' },
   subtitle: { fontSize: '14px', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px' },
+  modeToggle: { display: 'flex', background: '#1e293b', borderRadius: '12px', padding: '4px', border: '1px solid #334155' },
+  modeBtn: { padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', border: 'none', background: 'transparent', color: '#94a3b8', transition: 'all 0.2s' },
+  modeBtnActive: { background: '#10b981', color: 'white', shadow: '0 2px 4px rgba(0,0,0,0.2)' },
+
   card: { background: '#1e293b', borderRadius: '24px', padding: '40px', border: '1px solid #334155', width: '100%', marginBottom: '32px' },
   splitView: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' },
   label: { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: '12px' },
-  input: { width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', fontSize: '16px', color: 'white', marginBottom: '24px', fontFamily: 'inherit' },
   dropZone: { width: '100%', background: '#0f172a', border: '2px dashed #334155', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', minHeight: '180px', position: 'relative' as const },
   button: { width: '100%', background: '#10b981', color: 'white', border: 'none', padding: '20px', fontSize: '16px', fontWeight: 'bold', borderRadius: '12px', cursor: 'pointer', transition: 'transform 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
+
   resultBox: { marginTop: '40px', background: '#0f172a', borderRadius: '16px', padding: '0', border: '1px solid #334155', overflow: 'hidden' },
   resultHeader: { padding: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 'bold', color: '#f8fafc', background: '#1e293b', borderBottom: '1px solid #334155' },
   findingItem: { padding: '24px', borderBottom: '1px solid #334155' },
   findingTitle: { fontSize: '16px', fontWeight: 'bold', color: '#f8fafc', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' },
   findingDesc: { fontSize: '14px', color: '#94a3b8', marginBottom: '16px', lineHeight: 1.6 },
-  implementBtn: { background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
+
+  actionRow: { display: 'flex', gap: '12px', marginTop: '16px' },
+  techBtn: { background: '#1e293b', border: '1px solid #334155', color: '#e2e8f0', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
+  copyBtn: { background: '#3b82f6', border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
+
   codeBlock: { background: '#1e1e1e', padding: '20px', borderRadius: '12px', marginTop: '16px', overflowX: 'auto' as const, border: '1px solid #333' },
   codePre: { fontFamily: 'monospace', fontSize: '13px', color: '#d4d4d4', margin: 0 }
 };
@@ -58,32 +66,31 @@ async function fileToGenerativePart(file: File) {
 type AuditFinding = {
   title: string;
   description: string;
-  fixStrategy: string;
-  codeSnippet?: string; // We'll generate this on demand or initially
+  technicalSolution: string;
+  implementationPrompt: string;
+  codeSnippet?: string;
 };
 
 const App = () => {
   const [activePage, setActivePage] = useState('home');
   const [mode, setMode] = useState<'standard' | 'competitor'>('standard');
   const [analyzing, setAnalyzing] = useState(false);
-  const [generatingCode, setGeneratingCode] = useState<string | null>(null); // ID of finding being processed
+  const [generatingCode, setGeneratingCode] = useState<string | null>(null);
 
   // Inputs
-  const [url, setUrl] = useState('');
-  const [compUrl, setCompUrl] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [compFile, setCompFile] = useState<File | null>(null);
+  const [file1, setFile1] = useState<File | null>(null);
+  const [file2, setFile2] = useState<File | null>(null);
 
   // Results
   const [findings, setFindings] = useState<AuditFinding[]>([]);
 
   // Refs
-  const fileRef1 = useRef<HTMLInputElement>(null);
-  const fileRef2 = useRef<HTMLInputElement>(null);
+  const inputRef1 = useRef<HTMLInputElement>(null);
+  const inputRef2 = useRef<HTMLInputElement>(null);
 
   const handleAudit = async () => {
-    if ((!url && !file) || (mode === 'competitor' && !compUrl && !compFile)) {
-      alert("Please provide all required inputs (URLs or Screenshots).");
+    if (!file1 && !file2) {
+      alert("Please upload at least one screenshot.");
       return;
     }
 
@@ -96,38 +103,49 @@ const App = () => {
 
       if (mode === 'competitor') {
         prompt = `
-                Act as a Senior UX Strategist. 
-                Compare 'My Page' (psinv.net) against the 'Competitor Page'.
-                Identify 3 areas where the competitor is winning (e.g., Better Mobile Grid, Trust Signals, Sticky Nav).
-                For each finding, provide a 'fixStrategy' describing how to implement it in React/Tailwind.
+                Act as a Senior UX Strategist & Technical Lead. 
+                COMPARE these two screenshots:
+                1. First Image: PSI (My Site)
+                2. Second Image: Competitor
                 
+                Identify 3 critical UX gaps where PSI is lacking.
+                If the image is a PageSpeed score, READ the metrics (LCP, CLS) and provide fixes.
+
+                For each finding, provide:
+                1. 'title': The Issue
+                2. 'description': Why the competitor is better or what is wrong.
+                3. 'technicalSolution': Specific React/Tailwind technical approach.
+                4. 'implementationPrompt': A specific instruction I can copy to an AI coder to fix this file.
+
                 Return a strictly valid JSON array of objects: 
-                [{ "title": "...", "description": "...", "fixStrategy": "..." }]
-                Do not include markdown blocks like \`\`\`json. Just the raw JSON.
+                [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
+                Do not include markdown blocks.
             `;
 
-        if (file) parts.push(await fileToGenerativePart(file));
-        if (compFile) parts.push(await fileToGenerativePart(compFile));
-
-        if (url) prompt += `\nMy URL: ${url}`;
-        if (compUrl) prompt += `\nCompetitor URL: ${compUrl}`;
-
+        if (file1) parts.push(await fileToGenerativePart(file1));
+        if (file2) parts.push(await fileToGenerativePart(file2));
         parts.push(prompt);
 
       } else {
         prompt = `
                 Act as a Senior UX Strategist. 
-                Analyze 'My Page' (psinv.net).
-                Identify exactly 3 critical UX friction points.
-                For each finding, provide a 'fixStrategy' describing the solution in React/Tailwind.
+                Analyze this screenshot (it could be a UI or a PageSpeed Report).
+                If it's PageSpeed: Read the LCP, CLS, and TBT numbers.
+                If it's UI: Identify friction points.
+
+                Identify exactly 3 critical issues.
+                For each finding, provide:
+                1. 'title': The Issue
+                2. 'description': Impact on user/performance.
+                3. 'technicalSolution': React/Tailwind fix.
+                4. 'implementationPrompt': Specific instruction for an AI coder.
 
                 Return a strictly valid JSON array of objects: 
-                [{ "title": "...", "description": "...", "fixStrategy": "..." }]
-                Do not include markdown blocks like \`\`\`json. Just the raw JSON.
+                [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
+                Do not include markdown blocks.
             `;
 
-        if (file) parts.push(await fileToGenerativePart(file));
-        if (url) prompt += `\nTarget URL: ${url}`;
+        if (file1) parts.push(await fileToGenerativePart(file1));
         parts.push(prompt);
       }
 
@@ -139,11 +157,11 @@ const App = () => {
         setFindings(data);
       } catch (e) {
         console.error("JSON Parse Error", text);
-        // Fallback if JSON is messy
         setFindings([{
-          title: "Analysis Completed (Raw Format)",
+          title: "Raw Analysis Output",
           description: text,
-          fixStrategy: "Review raw output for details."
+          technicalSolution: "See description",
+          implementationPrompt: "Refactor this component based on the analysis."
         }]);
       }
 
@@ -154,35 +172,36 @@ const App = () => {
     }
   };
 
-  const implementFix = async (finding: AuditFinding, index: number) => {
+  const generateCode = async (finding: AuditFinding, index: number) => {
     setGeneratingCode(String(index));
     try {
       const prompt = `
-            Act as a Senior React Developer.
-            Task: Implement the following fix for psinv.net.
-            Fix: "${finding.title}" - ${finding.fixStrategy}
+            ${finding.implementationPrompt}
             
             Requirements:
             1. Create a complete, functional React functional component.
-            2. Use Tailwind CSS for styling (assume standard config).
-            3. Use 'lucide-react' for icons if needed.
-            4. Make it look premium (Dark mode preferred).
-            5. Return ONLY the code (no explanations).
+            2. Use Tailwind CSS for styling (Modern, Dark Mode compatible).
+            3. Use 'lucide-react' for icons.
+            4. Return ONLY the code.
           `;
 
       const result = await model.generateContent(prompt);
       const code = result.response.text().replace(/```tsx|```javascript|```/g, "").trim();
 
-      // Update findings with code
       const newFindings = [...findings];
       newFindings[index].codeSnippet = code;
       setFindings(newFindings);
 
     } catch (e: any) {
-      alert("Code Generation Failed: " + e.message);
+      alert("Code Gen Failed");
     } finally {
       setGeneratingCode(null);
     }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert("Prompt Copied to Clipboard!");
   };
 
   return (
@@ -194,22 +213,6 @@ const App = () => {
           PSI UX HUB
         </div>
         <nav style={S.nav}>
-          <div style={S.sectionTitle}>Strategy Room</div>
-          <div
-            onClick={() => setMode('competitor')}
-            style={{ ...S.navItem, ...(mode === 'competitor' ? S.navItemActive : {}) }}
-          >
-            <Swords size={18} />
-            Competitor Intelligence
-          </div>
-          <div
-            onClick={() => setMode('standard')}
-            style={{ ...S.navItem, ...(mode === 'standard' ? S.navItemActive : {}) }}
-          >
-            <AlertOctagon size={18} />
-            Forensic Audit
-          </div>
-
           <div style={S.sectionTitle}>Pages</div>
           {['Home Page', 'Luxury Projects', 'Off-Plan', 'Management', 'Sales Services', 'Mortgage', 'Careers', 'Contact Us'].map(name => (
             <div key={name} style={S.navItem}><FileText size={18} />{name}</div>
@@ -221,55 +224,66 @@ const App = () => {
       <main style={S.main}>
         <header style={S.header}>
           <div>
-            <div style={S.subtitle}>Strategy Engine</div>
-            <h1 style={S.title}>{mode === 'competitor' ? 'Competitor Benchmarking' : 'Forensic UX Audit'}</h1>
+            <div style={S.subtitle}>Implementation Engine</div>
+            <h1 style={S.title}>{mode === 'competitor' ? 'Competitive Benchmarking' : 'Forensic Audit'}</h1>
           </div>
-          {mode === 'competitor' && <div style={{ padding: '8px 16px', background: '#3b82f6', color: 'white', borderRadius: 20, fontSize: 13, fontWeight: 'bold' }}>VS Mode Active</div>}
+          {/* COMPARISON TOGGLE */}
+          <div style={S.modeToggle}>
+            <button
+              onClick={() => setMode('standard')}
+              style={{ ...S.modeBtn, ...(mode === 'standard' ? S.modeBtnActive : {}) }}
+            >
+              Standard Scan
+            </button>
+            <button
+              onClick={() => setMode('competitor')}
+              style={{ ...S.modeBtn, ...(mode === 'competitor' ? S.modeBtnActive : {}) }}
+            >
+              Competitor vs Mode
+            </button>
+          </div>
         </header>
 
         <div style={S.card}>
           {mode === 'competitor' ? (
             <div style={S.splitView}>
-              {/* MY SITE */}
+              {/* PSI */}
               <div>
-                <div style={{ ...S.label, color: '#10b981' }}>MY SITE (psinv.net)</div>
-                <input value={url} onChange={e => setUrl(e.target.value)} type="text" style={S.input} placeholder="https://www.psinv.net..." />
-                <div style={S.dropZone} onClick={() => fileRef1.current?.click()}>
-                  <input type="file" ref={fileRef1} style={{ display: 'none' }} onChange={e => setFile(e.target.files?.[0] || null)} />
-                  {file ? <CheckCircle2 color="#10b981" /> : <Upload color="#475569" />}
-                  <div style={{ marginTop: 8, fontSize: 13, color: '#94a3b8' }}>{file?.name || "Upload Screenshot"}</div>
+                <div style={{ ...S.label, color: '#10b981' }}>PSI SCREENSHOT / PAGESPEED</div>
+                <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
+                  <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => setFile1(e.target.files?.[0] || null)} />
+                  {file1 ? <CheckCircle2 size={40} color="#10b981" /> : <Upload size={40} color="#475569" />}
+                  <div style={{ marginTop: 16, fontSize: 13, color: '#94a3b8' }}>{file1?.name || "Drop PSI Image"}</div>
                 </div>
               </div>
               {/* COMPETITOR */}
               <div>
-                <div style={{ ...S.label, color: '#f59e0b' }}>COMPETITOR SITE</div>
-                <input value={compUrl} onChange={e => setCompUrl(e.target.value)} type="text" style={S.input} placeholder="https://www.bayut.com..." />
-                <div style={S.dropZone} onClick={() => fileRef2.current?.click()}>
-                  <input type="file" ref={fileRef2} style={{ display: 'none' }} onChange={e => setCompFile(e.target.files?.[0] || null)} />
-                  {compFile ? <CheckCircle2 color="#10b981" /> : <Upload color="#475569" />}
-                  <div style={{ marginTop: 8, fontSize: 13, color: '#94a3b8' }}>{compFile?.name || "Upload Screenshot"}</div>
+                <div style={{ ...S.label, color: '#f59e0b' }}>COMPETITOR SCREENSHOT</div>
+                <div style={S.dropZone} onClick={() => inputRef2.current?.click()}>
+                  <input type="file" ref={inputRef2} style={{ display: 'none' }} onChange={e => setFile2(e.target.files?.[0] || null)} />
+                  {file2 ? <CheckCircle2 size={40} color="#10b981" /> : <Swords size={40} color="#475569" />}
+                  <div style={{ marginTop: 16, fontSize: 13, color: '#94a3b8' }}>{file2?.name || "Drop Competitor Image"}</div>
                 </div>
               </div>
             </div>
           ) : (
             <div style={{ marginBottom: 32 }}>
-              <div style={S.label}>TARGET RESOURCE</div>
-              <input value={url} onChange={e => setUrl(e.target.value)} type="text" style={S.input} placeholder="Paste PageSpeed or Site URL..." />
-              <div style={S.dropZone} onClick={() => fileRef1.current?.click()}>
-                <input type="file" ref={fileRef1} style={{ display: 'none' }} onChange={e => setFile(e.target.files?.[0] || null)} />
-                {file ? <CheckCircle2 size={32} color="#10b981" /> : <Upload size={32} color="#475569" />}
-                <div style={{ marginTop: 12, fontWeight: 500, color: '#94a3b8' }}>{file?.name || "Drag & Drop Report / Screenshot"}</div>
+              <div style={S.label}>TARGET EVIDENCE (UI or Report)</div>
+              <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
+                <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => setFile1(e.target.files?.[0] || null)} />
+                {file1 ? <CheckCircle2 size={40} color="#10b981" /> : <Camera size={40} color="#475569" />}
+                <div style={{ marginTop: 16, fontWeight: 500, color: '#94a3b8' }}>{file1?.name || "Drop Screenshot of UI or PageSpeed"}</div>
               </div>
             </div>
           )}
 
           <button disabled={analyzing} onClick={handleAudit} style={{ ...S.button, opacity: analyzing ? 0.7 : 1 }}>
             {analyzing ? (
-              'ANALYZING...'
+              'AI ANALYZING VISION DATA...'
             ) : (
               <>
-                <Play size={20} fill="white" />
-                {mode === 'competitor' ? 'RUN COMPETITIVE SCAN' : 'RUN PROFESSIONAL AUDIT'}
+                <Zap size={20} fill="white" />
+                {mode === 'competitor' ? 'RUN COMPARATIVE ANALYSIS' : 'RUN FORENSIC SCAN'}
               </>
             )}
           </button>
@@ -280,35 +294,38 @@ const App = () => {
           <div style={S.resultBox}>
             <div style={S.resultHeader}>
               <Eye size={20} />
-              Strategy & Implementation Plan
+              Technical Solutions Identified
             </div>
             {findings.map((f, i) => (
               <div key={i} style={S.findingItem}>
                 <div style={S.findingTitle}>
-                  <AlertOctagon size={16} color="#f59e0b" />
+                  <AlertOctagon size={18} color="#f59e0b" />
                   {f.title}
                 </div>
                 <div style={S.findingDesc}>{f.description}</div>
 
-                {!f.codeSnippet ? (
-                  <button
-                    onClick={() => implementFix(f, i)}
-                    disabled={generatingCode === String(i)}
-                    style={{ ...S.implementBtn, opacity: generatingCode === String(i) ? 0.7 : 1 }}
-                  >
-                    {generatingCode === String(i) ? 'GENERATING CODE...' : '⚡ IMPLEMENT SOLUTION'}
+                <div style={{ background: '#0f172a', padding: 16, borderRadius: 8, fontSize: 13, color: '#cbd5e1', marginBottom: 16 }}>
+                  <strong style={{ color: '#10b981', display: 'block', marginBottom: 4 }}>TECHNICAL SOLUTION:</strong>
+                  {f.technicalSolution}
+                </div>
+
+                <div style={S.actionRow}>
+                  <button onClick={() => copyToClipboard(f.implementationPrompt)} style={S.copyBtn}>
+                    <Copy size={14} /> Copy Copy Prompt
                   </button>
-                ) : (
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <div style={{ fontSize: 12, fontWeight: 'bold', color: '#10b981' }}>✔ IMPLEMENTATION READY</div>
-                      <div style={{ fontSize: 12, color: '#64748b', display: 'flex', gap: 6, cursor: 'pointer' }}>
-                        <Copy size={12} /> Copy Code
-                      </div>
-                    </div>
-                    <div style={S.codeBlock}>
-                      <pre style={S.codePre}>{f.codeSnippet}</pre>
-                    </div>
+                  <button
+                    onClick={() => generateCode(f, i)}
+                    disabled={generatingCode === String(i)}
+                    style={{ ...S.techBtn, opacity: generatingCode === String(i) ? 0.7 : 1 }}
+                  >
+                    <Code size={14} />
+                    {generatingCode === String(i) ? 'Coding...' : 'Generate Component'}
+                  </button>
+                </div>
+
+                {f.codeSnippet && (
+                  <div style={S.codeBlock}>
+                    <pre style={S.codePre}>{f.codeSnippet}</pre>
                   </div>
                 )}
               </div>
