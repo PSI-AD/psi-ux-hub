@@ -20,7 +20,11 @@ const INITIAL_PROJECTS: Project[] = [
       { id: 'about-us', name: 'About Us', url: 'https://psinv.net/en/about-us', snapshots: [] },
       { id: 'careers', name: 'Careers', url: 'https://psinv.net/en/careers', snapshots: [] },
       { id: 'luxury-projects', name: 'Luxury Projects', url: 'https://psinv.net/en/project/luxury-project-uae/', snapshots: [] },
-      { id: 'sales-services', name: 'Sales Services', url: 'https://psinv.net/en/services/sales/sales-services/', snapshots: [] }
+      { id: 'sales-services', name: 'Sales Services', url: 'https://psinv.net/en/services/sales/sales-services/', snapshots: [] },
+      { id: 'property-management', name: 'Property Management', url: 'https://psinv.net/en/services/sales/property-management/', snapshots: [] },
+      { id: 'off-plan-projects', name: 'Off-Plan Projects', url: 'https://psinv.net/en/projects-off-plan', snapshots: [] },
+      { id: 'mortgage-solutions', name: 'Mortgage Solutions', url: 'https://psinv.net/en/services/sales/mortgage-solutions/', snapshots: [] },
+      { id: 'listing-details', name: 'Listing Details (Sample)', url: 'https://psinv.net/en/projects/abu-dhabi/saadiyat-island', snapshots: [] }
     ]
   }
 ];
