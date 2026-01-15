@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal } from 'lucide-react';
+import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal, Globe, Search } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // GEMINI SETUP
@@ -28,6 +28,8 @@ const S = {
   card: { background: '#1e293b', borderRadius: '24px', padding: '40px', border: '1px solid #334155', width: '100%', marginBottom: '32px' },
   splitView: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' },
   label: { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: '12px' },
+  input: { width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', fontSize: '16px', color: 'white', marginBottom: '16px', fontFamily: 'inherit' },
+
   dropZone: { width: '100%', background: '#0f172a', border: '2px dashed #334155', borderRadius: '16px', padding: '0', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', minHeight: '240px', position: 'relative' as const, overflow: 'hidden' },
   dropZoneContent: { padding: '32px', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', width: '100%', zIndex: 10 },
   thumbnail: { position: 'absolute' as const, top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' as const, opacity: 0.6, filter: 'blur(2px)' },
@@ -78,11 +80,15 @@ type AuditFinding = {
 
 const App = () => {
   const [activePage, setActivePage] = useState('home');
-  const [mode, setMode] = useState<'standard' | 'competitor'>('competitor'); // Default to competitor per request
+  const [mode, setMode] = useState<'standard' | 'competitor'>('competitor');
   const [analyzing, setAnalyzing] = useState(false);
   const [generatingCode, setGeneratingCode] = useState<string | null>(null);
 
-  // Inputs & Previews
+  // URL Comparison Inputs
+  const [psiUrl, setPsiUrl] = useState('');
+  const [compUrl, setCompUrl] = useState('');
+
+  // File Inputs & Previews
   const [file1, setFile1] = useState<File | null>(null);
   const [preview1, setPreview1] = useState<string | null>(null);
 
@@ -96,7 +102,6 @@ const App = () => {
   const inputRef1 = useRef<HTMLInputElement>(null);
   const inputRef2 = useRef<HTMLInputElement>(null);
 
-  // Clean URLs on unmount
   useEffect(() => {
     return () => {
       if (preview1) URL.revokeObjectURL(preview1);
@@ -114,8 +119,12 @@ const App = () => {
   };
 
   const handleAudit = async () => {
-    if (!file1 && !file2) {
-      alert("Please upload at least one screenshot to analyze.");
+    // Check if we have files OR urls
+    const hasFiles = file1 && file2;
+    const hasUrls = psiUrl && compUrl;
+
+    if (mode === 'competitor' && !hasFiles && !hasUrls) {
+      alert("Please provide either two URLs OR two Screenshots to compare.");
       return;
     }
 
@@ -127,47 +136,56 @@ const App = () => {
       const parts: any[] = [];
 
       if (mode === 'competitor') {
-        prompt = `
-                Act as a Senior UX Strategist & Technical Lead. 
-                COMPARE these two UI screenshots.
-                1. First Image: Our Page (psinv.net)
-                2. Second Image: Competitor Page
-                
-                Analyze layout, CTA placement, and trust signals.
-                1. List what the competitor does better.
-                2. Provide the EXACT Tailwind/React code to implement that improvement on psinv.net.
+        if (hasUrls) {
+          // URL-BASED DEEP SCAN
+          prompt = `
+                  Act as a Senior UX Strategist & Technical Lead.
+                  Analyze these two URLs (or use your internal knowledge of these platforms):
+                  1. PSI Target: ${psiUrl}
+                  2. Competitor: ${compUrl} (e.g., Property Finder, Bayut, Dubizzle)
 
-                For each finding, provide:
-                1. 'title': The Issue / Gap
-                2. 'description': Why the competitor wins here.
-                3. 'technicalSolution': The exact React approach (e.g. "Use flex-row with sticky positioning").
-                4. 'implementationPrompt': A command starting with "Apply this UI update to [filename]..."
+                  COMPARE AND CONTRAST specifically on:
+                  1. Search Filter Depth (Ease of finding a home).
+                  2. Mobile Responsiveness & Thumb-Zone Design.
+                  3. Trust Signals (Certificates, Verified Badges).
+                  4. Speed vs. Visual Quality.
 
-                Return a strictly valid JSON array of objects: 
-                [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
-                Do not include markdown blocks.
-            `;
+                  For each gap where the Competitor wins:
+                  1. 'title': The Issue.
+                  2. 'description': Why the competitor is winning.
+                  3. 'technicalSolution': "To beat [Competitor], change [Component] to..." (React/Tailwind specs).
+                  4. 'implementationPrompt': A command: "Apply this update to [filename]..."
 
-        if (file1) parts.push(await fileToGenerativePart(file1));
-        if (file2) parts.push(await fileToGenerativePart(file2));
+                  Return a strictly valid JSON array of objects.
+                `;
+        } else {
+          // VISION-BASED SCAN
+          prompt = `
+                  Act as a Senior UX Strategist. 
+                  COMPARE these two UI screenshots.
+                  1. First Image: PSI (My Site)
+                  2. Second Image: Competitor
+                  
+                  Analyze layout, CTA placement, and trust signals.
+                  1. List what the competitor does better.
+                  2. Provide the EXACT Tailwind/React code to implement that improvement on psinv.net.
+
+                  Return a strictly valid JSON array of objects for the top 3 gaps.
+                `;
+          if (file1) parts.push(await fileToGenerativePart(file1));
+          if (file2) parts.push(await fileToGenerativePart(file2));
+        }
         parts.push(prompt);
 
       } else {
+        // STANDARD SINGLE SCAN
         prompt = `
                 Act as a Senior UX Strategist. 
                 Analyze this design/audit screenshot.
                 Identify critical UX friction points.
                 If it's a PageSpeed score, read the numbers.
 
-                For each finding, provide:
-                1. 'title': The Issue
-                2. 'description': Impact on user.
-                3. 'technicalSolution': React/Tailwind fix.
-                4. 'implementationPrompt': A command: "Apply this UI update to [filename]..."
-
-                Return a strictly valid JSON array of objects: 
-                [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
-                Do not include markdown blocks.
+                Return a strictly valid JSON array of objects for top 3 issues.
             `;
 
         if (file1) parts.push(await fileToGenerativePart(file1));
@@ -183,7 +201,7 @@ const App = () => {
       } catch (e) {
         console.error("JSON Parse Error", text);
         setFindings([{
-          title: "Raw Analysis Output",
+          title: "Deep Analysis Output",
           description: text,
           technicalSolution: "See description",
           implementationPrompt: "Refactor this component based on the analysis."
@@ -248,7 +266,7 @@ const App = () => {
       <main style={S.main}>
         <header style={S.header}>
           <div>
-            <div style={S.subtitle}>Implementation Engine v4.0</div>
+            <div style={S.subtitle}>Implementation Engine v5.0</div>
             <h1 style={S.title}>{mode === 'competitor' ? 'Competitive Benchmarking' : 'Forensic Audit'}</h1>
           </div>
           {/* COMPARISON TOGGLE */}
@@ -273,25 +291,45 @@ const App = () => {
             <div style={S.splitView}>
               {/* PSI */}
               <div>
-                <div style={{ ...S.label, color: '#10b981' }}>PSI SCREENSHOT / PAGESPEED</div>
-                <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
-                  {preview1 && <img src={preview1} style={S.thumbnail} />}
-                  <div style={S.dropZoneContent}>
-                    <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => handleFileChange(e, 1)} />
-                    {preview1 ? <CheckCircle2 size={40} color="#10b981" /> : <Upload size={40} color="#475569" />}
-                    <div style={S.thumbnailLabel}>{file1?.name || "Drop PSI Image"}</div>
+                <div style={{ ...S.label, color: '#10b981' }}>PSI TARGET</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <input
+                    value={psiUrl}
+                    onChange={e => setPsiUrl(e.target.value)}
+                    type="text"
+                    style={S.input}
+                    placeholder="https://www.psinv.net..."
+                  />
+                  <div style={S.label}>OR UPLOAD IMAGE</div>
+                  <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
+                    {preview1 && <img src={preview1} style={S.thumbnail} />}
+                    <div style={S.dropZoneContent}>
+                      <input type="file" ref={inputRef1} style={{ display: 'none' }} onChange={e => handleFileChange(e, 1)} />
+                      {preview1 ? <CheckCircle2 size={40} color="#10b981" /> : <Globe size={40} color="#475569" />}
+                      <div style={S.thumbnailLabel}>{file1?.name || "Drop PSI Screenshot"}</div>
+                    </div>
                   </div>
                 </div>
               </div>
               {/* COMPETITOR */}
               <div>
-                <div style={{ ...S.label, color: '#f59e0b' }}>COMPETITOR SCREENSHOT</div>
-                <div style={S.dropZone} onClick={() => inputRef2.current?.click()}>
-                  {preview2 && <img src={preview2} style={S.thumbnail} />}
-                  <div style={S.dropZoneContent}>
-                    <input type="file" ref={inputRef2} style={{ display: 'none' }} onChange={e => handleFileChange(e, 2)} />
-                    {preview2 ? <CheckCircle2 size={40} color="#10b981" /> : <Swords size={40} color="#475569" />}
-                    <div style={S.thumbnailLabel}>{file2?.name || "Drop Competitor Image"}</div>
+                <div style={{ ...S.label, color: '#f59e0b' }}>COMPETITOR TARGET</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <input
+                    value={compUrl}
+                    onChange={e => setCompUrl(e.target.value)}
+                    type="text"
+                    style={S.input}
+                    placeholder="https://www.propertyfinder.ae..."
+                  />
+                  <div style={S.label}>OR UPLOAD IMAGE</div>
+                  <div style={S.dropZone} onClick={() => inputRef2.current?.click()}>
+                    {preview2 && <img src={preview2} style={S.thumbnail} />}
+                    <div style={S.dropZoneContent}>
+                      <input type="file" ref={inputRef2} style={{ display: 'none' }} onChange={e => handleFileChange(e, 2)} />
+                      {preview2 ? <CheckCircle2 size={40} color="#10b981" /> : <Swords size={40} color="#475569" />}
+                      <div style={S.thumbnailLabel}>{file2?.name || "Drop Competitor Screenshot"}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -312,11 +350,11 @@ const App = () => {
 
           <button disabled={analyzing} onClick={handleAudit} style={{ ...S.button, opacity: analyzing ? 0.7 : 1 }}>
             {analyzing ? (
-              'AI ANALYZING VISION DATA...'
+              'RUNNING DEEP INTELLIGENCE SCAN...'
             ) : (
               <>
                 <Zap size={20} fill="white" />
-                {mode === 'competitor' ? 'RUN COMPARATIVE ANALYSIS' : 'RUN FORENSIC SCAN'}
+                {mode === 'competitor' ? 'RUN DEEP INTELLIGENCE SCAN' : 'RUN FORENSIC SCAN'}
               </>
             )}
           </button>
@@ -327,7 +365,7 @@ const App = () => {
           <div style={S.resultBox}>
             <div style={S.resultHeader}>
               <Eye size={20} />
-              Technical Solutions Identified
+              Competitive Strategy & Solutions
             </div>
             {findings.map((f, i) => (
               <div key={i} style={S.findingItem}>
@@ -338,13 +376,13 @@ const App = () => {
                 <div style={S.findingDesc}>{f.description}</div>
 
                 <div style={{ background: '#0f172a', padding: 16, borderRadius: 8, fontSize: 13, color: '#cbd5e1', marginBottom: 16 }}>
-                  <strong style={{ color: '#10b981', display: 'block', marginBottom: 4 }}>TECHNICAL SOLUTION:</strong>
+                  <strong style={{ color: '#10b981', display: 'block', marginBottom: 4 }}>TECHNICAL WIN:</strong>
                   {f.technicalSolution}
                 </div>
 
                 <div style={S.actionRow}>
                   <button onClick={() => copyPrompt(f.implementationPrompt)} style={S.copyBtn}>
-                    <Terminal size={14} /> Copy for Anti-Gravity
+                    <Terminal size={14} /> Copy Copy Prompt
                   </button>
                   <button
                     onClick={() => generateCode(f, i)}
