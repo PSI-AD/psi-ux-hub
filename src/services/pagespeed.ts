@@ -13,8 +13,8 @@ export interface PageSpeedResult {
 }
 
 export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> => {
-  const apiKey = process.env.API_KEY || ''; 
-  
+  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || '';
+
   // 1. Normalize URL (PSI requires protocol)
   let targetUrl = url.trim();
   if (!/^https?:\/\//i.test(targetUrl)) {
@@ -28,7 +28,7 @@ export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> =
     urlWithParams.searchParams.append('category', 'ACCESSIBILITY');
     urlWithParams.searchParams.append('category', 'SEO');
     urlWithParams.searchParams.append('strategy', 'MOBILE'); // Real estate traffic is predominantly mobile
-    
+
     if (includeKey && apiKey) {
       urlWithParams.searchParams.append('key', apiKey);
     }
@@ -38,35 +38,40 @@ export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> =
   try {
     // Attempt 1: Try with API Key if available
     let res = await fetch(buildRequestUrl(true));
-    
+
     // Retry Logic: If API Key is invalid (common if reusing AI Studio key for PSI), retry without it
     if (!res.ok && apiKey) {
-        const errorClone = res.clone();
-        try {
-            const errorBody = await errorClone.json();
-            const msg = errorBody?.error?.message || '';
-            // Check for common API key errors
-            if (msg.includes('API key not valid') || msg.includes('ProjectNotLinked')) {
-                console.warn("Provided API Key is not valid for PageSpeed Insights. Retrying anonymously.");
-                res = await fetch(buildRequestUrl(false));
-            }
-        } catch (e) {
-            // Ignore JSON parse errors on error response, proceed to standard error handling
+      const errorClone = res.clone();
+      try {
+        const errorBody = await errorClone.json();
+        const msg = errorBody?.error?.message || '';
+        // Check for common API key errors
+        if (msg.includes('API key not valid') || msg.includes('ProjectNotLinked')) {
+          console.warn("Provided API Key is not valid for PageSpeed Insights. Retrying anonymously.");
+          res = await fetch(buildRequestUrl(false));
         }
+      } catch (e) {
+        // Ignore JSON parse errors on error response, proceed to standard error handling
+      }
     }
-    
+
     if (!res.ok) {
       // Google APIs return error details in JSON body
       const errorBody = await res.json().catch(() => null);
       const errorMessage = errorBody?.error?.message || res.statusText || `Status ${res.status}`;
+
+      if (res.status === 429) {
+        throw new Error("PSI Project Quota reached (Project 622985978871). Please check Google Cloud Console for limit increases.");
+      }
+
       throw new Error(`PSI API Error: ${errorMessage}`);
     }
-    
+
     const data = await res.json();
     const lighthouse = data.lighthouseResult;
 
     if (!lighthouse) {
-        throw new Error("PSI API returned valid response but missing lighthouseResult.");
+      throw new Error("PSI API returned valid response but missing lighthouseResult.");
     }
 
     // Critical metrics for Real Estate sites (High visual load)
@@ -86,7 +91,7 @@ export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> =
         const isCritical = CRITICAL_METRICS.includes(audit.id);
         const isFailing = typeof audit.score === 'number' && audit.score < 0.9;
         const isTerrible = typeof audit.score === 'number' && audit.score < 0.5;
-        
+
         // Return if it's a critical metric failing, OR any metric failing badly
         return (isCritical && isFailing) || isTerrible;
       })
