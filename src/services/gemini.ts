@@ -74,6 +74,54 @@ export async function generateFeatureCode(featureName: string, description: stri
 }
 
 /**
+ * AGENT 4: DIRECT UX AUDIT (NO API)
+ * Bypasses PageSpeed and asks Gemini to analyze the site purely by URL knowledge/inference
+ */
+export async function runVisualAudit(url: string) {
+  try {
+    const prompt = `
+      Act as a Senior UX Strategist.
+      Analyze the live site at ${url}.
+      Identify the top 3 friction points and provide Tailwind CSS code fixes to improve conversion.
+      
+      Return the response in this JSON format:
+      {
+        "executive_summary": {
+          "key_advantage": "One sentence summary",
+          "critical_fix": "Most urgent fix",
+          "estimated_roi": "e.g. +15%"
+        },
+        "findings": [
+          {
+            "issue_title": "Title of issue",
+            "visual_explanation": "Description of the problem",
+            "real_estate_impact": "Impact on sales/leads",
+            "solution_code_react": "React/Tailwind code snippet to fix it",
+            "preview_html": "HTML snippet"
+          }
+        ],
+        "lighthouse_score": 85,
+        "lighthouse_metrics": {
+          "lcp": "1.2s",
+          "cls": "0.05",
+          "fid": "12ms"
+        }
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const cleanText = text.replace(/```json|```/g, "").trim();
+    return JSON.parse(cleanText);
+
+  } catch (error) {
+    console.error("Gemini Direct Audit Error:", error);
+    throw error;
+  }
+}
+
+/**
  * HELPER: Convert File to Base64
  */
 async function fileToGenerativePart(file: File) {

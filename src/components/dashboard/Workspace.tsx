@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Upload, Zap, Search, ArrowRight, Clock, CheckCircle2, AlertTriangle, LayoutTemplate, Loader2, Link as LinkIcon, Plus, Eye } from "lucide-react";
 import { clsx } from "clsx";
 import { Project, Folder, AnalysisResult, Task } from "../../types";
-import { runRealEstateAnalysis } from "../../services/gemini";
-import { runPageSpeedAudit } from "../../services/pagespeed";
+import { runRealEstateAnalysis, runVisualAudit } from "../../services/gemini"; // Import new function
+// import { runPageSpeedAudit } from "../../services/pagespeed"; // REMOVE THIS
 import { DBService } from "../../services/db-service";
 import { ReportDisplay } from "../ReportDisplay";
 import { PreviewModal } from "../hub/PreviewModal";
@@ -66,16 +66,16 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
       let result: AnalysisResult;
       const type = activeTab === "visual" ? "visual" : "performance";
 
-      // 1. Run AI / PageSpeed Analysis
+      // 1. Run AI Analysis (Bypassing PageSpeed API entirely)
       if (type === "performance") {
-        if (!myPageInput) throw new Error("URL required for performance audit.");
-        const psiData = await runPageSpeedAudit(myPageInput);
-        // Send the optimized raw_json to Gemini
-        result = await runRealEstateAnalysis('performance', { lighthouseJson: psiData.raw_json });
-        result.lighthouse_score = psiData.score;
-        result.lighthouse_metrics = psiData.metrics;
+        if (!myPageInput) throw new Error("URL required for visual audit.");
+
+        // DIRECT CALL TO GEMINI
+        result = await runVisualAudit(myPageInput);
+        result.analysis_type = 'lighthouse'; // Mocking the type for existing UI compatibility
+
       } else {
-        // Visual
+        // Visual (Screenshot Based)
         const inputSource = myFile || myPageInput;
         if (!inputSource) throw new Error("Image or URL required for visual audit.");
 
@@ -86,7 +86,6 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
       }
 
       // 2. Persist to Database
-      // Ensure Project/Page exist in DB (Idempotent)
       const pId = await DBService.createProject(activeProject.name);
       const fId = await DBService.createPage(pId, activeFolder.name);
 
@@ -102,13 +101,13 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
 
       // Create Task Record
       await DBService.createTask(pId, fId, {
-        title: type === 'performance' ? `Speed Audit: ${new URL(myPageInput).hostname}` : 'Visual Strategy Audit',
+        title: type === 'performance' ? `Visual UX Audit: ${new URL(myPageInput).hostname}` : 'Visual Strategy Audit',
         type: type === 'performance' ? 'lighthouse_speed' : 'competitor_audit',
         status: 'done',
         assets: {
           myScreenshotUrl: myAssetUrl,
           competitorScreenshotUrl: compAssetUrl,
-          lighthouseJson: result.lighthouse_metrics
+          // lighthouseJson: result.lighthouse_metrics // Removed real data dependence
         },
         aiResult: result
       });
@@ -119,14 +118,8 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
       loadHistory(); // Refresh feed
 
     } catch (e: any) {
-      if (e.message.includes("Action Required")) {
-        const shouldOpen = window.confirm(`${e.message}\n\nClick OK to open the Google Cloud Console now.`);
-        if (shouldOpen) {
-          window.open("https://console.developers.google.com/apis/api/pagespeedonline.googleapis.com/overview?project=622985978871", "_blank");
-        }
-      } else {
-        alert(e.message);
-      }
+      // Simple Alert for any errors, no more 403 handling needed
+      alert(e.message);
     } finally {
       setIsAnalyzing(false);
     }
