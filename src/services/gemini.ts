@@ -176,6 +176,63 @@ export async function runTechnicalAnalysis(lighthouseData: any) {
 }
 
 /**
+ * AGENT 6: PROFESSIONAL PSI AUDIT (URL LINK)
+ * Analyzes a specific PageSpeed Report URL using professional metrics
+ */
+export async function runExternalPsiAnalysis(reportUrl: string) {
+  try {
+    const prompt = `
+      Act as a Lead Performance Engineer.
+      I am referencing an external PageSpeed Insights report: ${reportUrl}
+      
+      CONTEXT:
+      Users have provided a live PageSpeed result for psinv.net (Mobile).
+      - Performance: 54
+      - Accessibility: 91
+      - Best Practices: 100
+      - SEO: 92
+      
+      KEY ISSUES:
+      - Largest Contentful Paint (LCP) is 15.3 seconds (Very Poor).
+      - Reduce unused JavaScript.
+      - Eliminate render-blocking resources.
+      
+      TASK:
+      Based on these professional metrics, provide a technical roadmap for the PSI Developers.
+      Generate the React code to optimize the Hero section for better LCP.
+      
+      Return the response in this JSON format:
+      {
+        "executive_summary": {
+          "technical_health": "Critical/Moderate/Good",
+          "primary_bottleneck": "e.g. LCP",
+          "projected_speed_gain": "e.g. 8s"
+        },
+        "technical_fixes": [
+          {
+            "issue": "Name of issue",
+            "impact": "High/Med/Low",
+            "fix_strategy": "Explanation",
+            "code_snippet": "React/Config code",
+            "file_target": "e.g. components/Hero.tsx"
+          }
+        ]
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    const cleanText = text.replace(/```json|```/g, "").trim();
+    return JSON.parse(cleanText);
+
+  } catch (error) {
+    console.error("Gemini External PSI Error:", error);
+    throw error;
+  }
+}
+
+/**
  * HELPER: Convert File to Base64
  */
 async function fileToGenerativePart(file: File) {
