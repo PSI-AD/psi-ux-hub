@@ -42,7 +42,13 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
       setCurrentReport(null);
       setMyFile(null);
       setCompFile(null);
-      setMyPageInput("");
+
+      // Auto-fill URL for PSI
+      if (activeFolder.name.includes("Home") || activeFolder.name.includes("psi")) {
+        setMyPageInput("https://www.psinv.net");
+      } else {
+        setMyPageInput("");
+      }
     }
   }, [activeProject?.id, activeFolder?.id]);
 
@@ -271,7 +277,7 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
       <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10 backdrop-blur-xl bg-white/90">
         <div>
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
-            <span>{activeProject?.name || "Select Project"}</span>
+            <span>{activeProject?.name || "Property Shop Investment"}</span>
             <span className="text-slate-300">/</span>
             <span>Pages</span>
           </div>
@@ -407,58 +413,69 @@ export default function Workspace({ activeProject, activeFolder }: WorkspaceProp
               // Speed Tab & External Link
               <div className="space-y-6">
 
-                {/* 1. Direct Visual Audit */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                  <label className="block text-sm font-semibold text-slate-900 mb-3">Target URL for Visual Audit</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-                      <input
-                        type="text"
-                        placeholder="https://skyline-towers.com"
-                        value={myPageInput}
-                        onChange={(e) => setMyPageInput(e.target.value)}
-                        className="w-full pl-10 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 shadow-sm"
-                      />
-                    </div>
-                    <button
-                      onClick={handleRunAnalysis}
-                      disabled={isAnalyzing || !myPageInput}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-semibold shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : "Run Visual Audit"}
-                    </button>
-                  </div>
-                </div>
+                {/* Deep Audit Input Group */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Zap size={18} className="text-emerald-600" />
+                    Deep Audit Input Source
+                  </h3>
 
-                {/* 2. External PageSpeed Report */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                  <label className="block text-sm font-semibold text-slate-900 mb-3">Link External Audit (PageSpeed URL)</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <LinkIcon className="absolute left-3 top-3 text-slate-400" size={18} />
-                      <input
-                        type="text"
-                        placeholder="https://pagespeed.web.dev/analysis/..."
-                        defaultValue=""
-                        id="ext-url-input"
-                        className="w-full pl-10 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-2.5 shadow-sm"
-                      />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Option A: Paste Link */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold text-slate-700 block">
+                        Option A: Paste PageSpeed Result URL
+                      </label>
+                      <div className="relative">
+                        <LinkIcon className="absolute left-3 top-3 text-slate-400" size={16} />
+                        <input
+                          type="text"
+                          placeholder="https://pagespeed.web.dev/analysis/..."
+                          value={myPageInput}
+                          onChange={(e) => setMyPageInput(e.target.value)}
+                          className="w-full pl-9 bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-2 focus:ring-emerald-500 block p-3 shadow-sm font-mono"
+                        />
+                      </div>
+                      <button
+                        onClick={handleExternalReportImport}
+                        disabled={isAnalyzing || !myPageInput}
+                        className="w-full bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all flex items-center justify-center gap-2"
+                      >
+                        Import from URL
+                      </button>
                     </div>
-                    <button
-                      onClick={() => {
-                        // Hack to avoid adding more state for now, just read the DOM element
-                        const val = (document.getElementById('ext-url-input') as HTMLInputElement).value;
-                        if (val) {
-                          setMyPageInput(val); // Set it to state so the handler uses it
-                          setTimeout(handleExternalReportImport, 100);
-                        }
-                      }}
-                      disabled={isAnalyzing}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-semibold shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {isAnalyzing ? <Loader2 className="animate-spin" size={16} /> : "Import PSI Report"}
-                    </button>
+
+                    {/* Option B: Upload JSON */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold text-slate-700 block">
+                        Option B: Upload Report (JSON)
+                      </label>
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className={clsx(
+                          "relative border-2 border-dashed rounded-lg p-5 transition-all cursor-pointer group text-center h-[108px] flex flex-col items-center justify-center",
+                          myFile ? "border-emerald-500 bg-emerald-50" : "border-slate-300 hover:border-emerald-400 hover:bg-slate-50"
+                        )}
+                      >
+                        <input type="file" ref={fileInputRef} className="hidden" accept=".json,image/*" onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) {
+                            setMyFile(f);
+                            handleJsonUpload(f);
+                          }
+                        }} />
+                        {myFile ? (
+                          <div className="flex items-center gap-2 text-emerald-700 font-medium">
+                            <CheckCircle2 size={18} /> {myFile.name}
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6 text-slate-400 group-hover:text-emerald-500 mb-2" />
+                            <span className="text-xs text-slate-500">Drop Lighthouse JSON here</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
