@@ -57,8 +57,8 @@ export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> =
 
     // Check if we are running with Service Account context
     if (import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT) {
-      // Note: In a client-side app, we still use the API Key, but we log the context for debugging.
-      // The Service Account is managed by the Google Cloud Project permissions.
+      // DEBUG: Service Account 'pagespeed@competeui-4410.iam.gserviceaccount.com' is configured.
+      // The API Key below must be restricted to allow usage by this account's project.
     }
 
     if (!res.ok) {
