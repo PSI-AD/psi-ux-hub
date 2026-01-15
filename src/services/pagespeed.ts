@@ -21,18 +21,17 @@ export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> =
     targetUrl = 'https://' + targetUrl;
   }
 
+  // DEBUG: Explicitly log the Project Number being used
   const buildRequestUrl = (includeKey: boolean) => {
-    const urlWithParams = new URL(PAGESPEED_ENDPOINT);
-    urlWithParams.searchParams.append('url', targetUrl);
-    urlWithParams.searchParams.append('category', 'PERFORMANCE');
-    urlWithParams.searchParams.append('category', 'ACCESSIBILITY');
-    urlWithParams.searchParams.append('category', 'SEO');
-    urlWithParams.searchParams.append('strategy', 'MOBILE'); // Real estate traffic is predominantly mobile
+    console.log("PSI Request using Project Number:", import.meta.env.VITE_GOOGLE_PROJECT_NUMBER);
+
+    // Use simple template literal structure to avoid encoding issues
+    const baseUrl = `${PAGESPEED_ENDPOINT}?url=${encodeURIComponent(targetUrl)}&category=PERFORMANCE&category=ACCESSIBILITY&category=SEO&strategy=MOBILE`;
 
     if (includeKey && apiKey) {
-      urlWithParams.searchParams.append('key', apiKey);
+      return `${baseUrl}&key=${apiKey}`;
     }
-    return urlWithParams.toString();
+    return baseUrl;
   };
 
   try {
