@@ -9,8 +9,8 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey || "");
 
-// We use 'gemini-1.5-pro' because it is best for Coding and Image Analysis
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+// We use 'gemini-1.5-flash' because it is faster and better for real-time audits
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 /**
  * AGENT 1: VISUAL STRATEGIST
