@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal, Globe, Search } from 'lucide-react';
+import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal, Globe, Search, AlertTriangle } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // GEMINI SETUP
@@ -48,7 +48,9 @@ const S = {
   copyBtn: { background: '#3b82f6', border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' },
 
   codeBlock: { background: '#1e1e1e', padding: '20px', borderRadius: '12px', marginTop: '16px', overflowX: 'auto' as const, border: '1px solid #333' },
-  codePre: { fontFamily: 'monospace', fontSize: '13px', color: '#d4d4d4', margin: 0 }
+  codePre: { fontFamily: 'monospace', fontSize: '13px', color: '#d4d4d4', margin: 0 },
+
+  errorBox: { marginTop: '40px', background: '#450a0a', border: '1px solid #f87171', borderRadius: '16px', padding: '24px', color: '#fee2e2' },
 };
 
 // --- HELPER TO CONVERT FILE TO GEMINI PART ---
@@ -97,6 +99,7 @@ const App = () => {
 
   // Results
   const [findings, setFindings] = useState<AuditFinding[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Refs
   const inputRef1 = useRef<HTMLInputElement>(null);
@@ -113,8 +116,8 @@ const App = () => {
     const f = e.target.files?.[0];
     if (f) {
       const url = URL.createObjectURL(f);
-      if (slot === 1) { setFile1(f); setPreview1(url); }
-      else { setFile2(f); setPreview2(url); }
+      if (slot === 1) { setFile1(f); setPreview1(url); setErrorMsg(null); }
+      else { setFile2(f); setPreview2(url); setErrorMsg(null); }
     }
   };
 
@@ -122,14 +125,22 @@ const App = () => {
     // Check if we have files OR urls
     const hasFiles = file1 && file2;
     const hasUrls = psiUrl && compUrl;
+    const hasSingleUrl = psiUrl;
+    const hasSingleFile = file1;
 
+    // Validate inputs based on mode
     if (mode === 'competitor' && !hasFiles && !hasUrls) {
-      alert("Please provide either two URLs OR two Screenshots to compare.");
+      setErrorMsg("Input Required: Please provide either 2 URLs OR 2 Screenshots for comparison.");
+      return;
+    }
+    if (mode === 'standard' && !hasSingleUrl && !hasSingleFile) {
+      setErrorMsg("Input Required: Please provide a Target URL or Screenshot.");
       return;
     }
 
     setAnalyzing(true);
     setFindings([]);
+    setErrorMsg(null);
 
     try {
       let prompt = "";
@@ -137,23 +148,24 @@ const App = () => {
 
       if (mode === 'competitor') {
         if (hasUrls) {
-          // URL-BASED DEEP SCAN
+          // TEXT-BASED DEEP SCAN (Internal Knowledge - No API fetch)
           prompt = `
                   Act as a Senior UX Strategist & Technical Lead.
-                  Analyze these two URLs (or use your internal knowledge of these platforms):
+                  Analyze these two URLs using your INTERNAL knowledge of these platforms (Do not attempt to scrape if blocked).
+                  
                   1. PSI Target: ${psiUrl}
                   2. Competitor: ${compUrl} (e.g., Property Finder, Bayut, Dubizzle)
 
                   COMPARE AND CONTRAST specifically on:
-                  1. Search Filter Depth (Ease of finding a home).
-                  2. Mobile Responsiveness & Thumb-Zone Design.
-                  3. Trust Signals (Certificates, Verified Badges).
+                  1. Search Filter Depth.
+                  2. Mobile Responsiveness & Thumb-Zone.
+                  3. Trust Signals.
                   4. Speed vs. Visual Quality.
 
                   For each gap where the Competitor wins:
                   1. 'title': The Issue.
                   2. 'description': Why the competitor is winning.
-                  3. 'technicalSolution': "To beat [Competitor], change [Component] to..." (React/Tailwind specs).
+                  3. 'technicalSolution': "To beat [Competitor], change [Component] to..." (React/Tailwind spec).
                   4. 'implementationPrompt': A command: "Apply this update to [filename]..."
 
                   Return a strictly valid JSON array of objects.
@@ -162,15 +174,14 @@ const App = () => {
           // VISION-BASED SCAN
           prompt = `
                   Act as a Senior UX Strategist. 
-                  COMPARE these two UI screenshots.
-                  1. First Image: PSI (My Site)
-                  2. Second Image: Competitor
+                  COMPARE these two screenshots.
+                  1. My Site
+                  2. Competitor Site
                   
-                  Analyze layout, CTA placement, and trust signals.
-                  1. List what the competitor does better.
-                  2. Provide the EXACT Tailwind/React code to implement that improvement on psinv.net.
+                  Analyze layout, CTA, and trust signals.
+                  List what the competitor does better and provide the EXACT Tailwind/React code to fix it.
 
-                  Return a strictly valid JSON array of objects for the top 3 gaps.
+                  Return a strictly valid JSON array of objects.
                 `;
           if (file1) parts.push(await fileToGenerativePart(file1));
           if (file2) parts.push(await fileToGenerativePart(file2));
@@ -178,17 +189,27 @@ const App = () => {
         parts.push(prompt);
 
       } else {
-        // STANDARD SINGLE SCAN
-        prompt = `
-                Act as a Senior UX Strategist. 
-                Analyze this design/audit screenshot.
-                Identify critical UX friction points.
-                If it's a PageSpeed score, read the numbers.
-
-                Return a strictly valid JSON array of objects for top 3 issues.
-            `;
-
-        if (file1) parts.push(await fileToGenerativePart(file1));
+        // STANDARD MODE
+        if (hasSingleFile) {
+          prompt = `
+                    Act as a Senior UX Strategist. 
+                    Analyze this visual design/screenshot.
+                    Identify critical UX friction points.
+                    Return a strictly valid JSON array of objects for top 3 issues with fixes.
+                `;
+          parts.push(await fileToGenerativePart(file1!));
+        } else {
+          // URL Crawler Mode
+          prompt = `
+                    You are a UX Auditor. 
+                    Visit this URL: ${psiUrl} (or use your internal knowledge if you cannot access it live).
+                    Perform a professional audit covering: Visual Design, Conversion Friction, and Mobile UX. 
+                    Provide a table of technical fixes.
+                    
+                    Return a strictly valid JSON array of objects: 
+                    [{ "title": "...", "description": "...", "technicalSolution": "React/Tailwind fix", "implementationPrompt": "..." }]
+                `;
+        }
         parts.push(prompt);
       }
 
@@ -204,12 +225,17 @@ const App = () => {
           title: "Deep Analysis Output",
           description: text,
           technicalSolution: "See description",
-          implementationPrompt: "Refactor this component based on the analysis."
+          implementationPrompt: "Refactor based on analysis."
         }]);
       }
 
     } catch (e: any) {
-      alert(e.message);
+      console.error("Gemini Error", e);
+      if (e.message.includes("403") || e.message.includes("fetch")) {
+        setErrorMsg("URL Fetch blocked by site security. Please upload a screenshot for a Visual Audit.");
+      } else {
+        setErrorMsg(`Audit Error: ${e.message}. Try uploading a screenshot instead.`);
+      }
     } finally {
       setAnalyzing(false);
     }
@@ -266,19 +292,19 @@ const App = () => {
       <main style={S.main}>
         <header style={S.header}>
           <div>
-            <div style={S.subtitle}>Implementation Engine v5.0</div>
+            <div style={S.subtitle}>Implementation Engine v5.1</div>
             <h1 style={S.title}>{mode === 'competitor' ? 'Competitive Benchmarking' : 'Forensic Audit'}</h1>
           </div>
           {/* COMPARISON TOGGLE */}
           <div style={S.modeToggle}>
             <button
-              onClick={() => setMode('standard')}
+              onClick={() => { setMode('standard'); setErrorMsg(null); }}
               style={{ ...S.modeBtn, ...(mode === 'standard' ? S.modeBtnActive : {}) }}
             >
               Standard Scan
             </button>
             <button
-              onClick={() => setMode('competitor')}
+              onClick={() => { setMode('competitor'); setErrorMsg(null); }}
               style={{ ...S.modeBtn, ...(mode === 'competitor' ? S.modeBtnActive : {}) }}
             >
               Competitor Mode
@@ -295,7 +321,7 @@ const App = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <input
                     value={psiUrl}
-                    onChange={e => setPsiUrl(e.target.value)}
+                    onChange={e => { setPsiUrl(e.target.value); setErrorMsg(null); }}
                     type="text"
                     style={S.input}
                     placeholder="https://www.psinv.net..."
@@ -317,7 +343,7 @@ const App = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <input
                     value={compUrl}
-                    onChange={e => setCompUrl(e.target.value)}
+                    onChange={e => { setCompUrl(e.target.value); setErrorMsg(null); }}
                     type="text"
                     style={S.input}
                     placeholder="https://www.propertyfinder.ae..."
@@ -337,6 +363,13 @@ const App = () => {
           ) : (
             <div style={{ marginBottom: 32 }}>
               <div style={S.label}>TARGET EVIDENCE (UI or Report)</div>
+              <input
+                value={psiUrl}
+                onChange={e => { setPsiUrl(e.target.value); setErrorMsg(null); }}
+                type="text"
+                style={S.input}
+                placeholder="https://www.psinv.net..."
+              />
               <div style={S.dropZone} onClick={() => inputRef1.current?.click()}>
                 {preview1 && <img src={preview1} style={S.thumbnail} />}
                 <div style={S.dropZoneContent}>
@@ -348,7 +381,17 @@ const App = () => {
             </div>
           )}
 
-          <button disabled={analyzing} onClick={handleAudit} style={{ ...S.button, opacity: analyzing ? 0.7 : 1 }}>
+          {errorMsg && (
+            <div style={S.errorBox}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'bold', marginBottom: 8 }}>
+                <AlertTriangle size={20} />
+                Audit Failed
+              </div>
+              {errorMsg}
+            </div>
+          )}
+
+          <button disabled={analyzing} onClick={handleAudit} style={{ ...S.button, opacity: analyzing ? 0.7 : 1, marginTop: 24 }}>
             {analyzing ? (
               'RUNNING DEEP INTELLIGENCE SCAN...'
             ) : (
