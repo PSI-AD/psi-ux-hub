@@ -8,7 +8,7 @@ const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || "";
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// STYLES - "No-Fail" Clean UI
+// STYLES - Clean Dashboard
 const S = {
   container: { display: 'flex', height: '100vh', fontFamily: "'Inter', sans-serif", background: '#0f172a', color: '#f1f5f9' },
   sidebar: { width: '280px', background: '#1e293b', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column' as const },
@@ -22,7 +22,7 @@ const S = {
 
   card: { background: '#1e293b', borderRadius: '24px', padding: '40px', border: '1px solid #334155', width: '100%', maxWidth: '800px', margin: '0 auto', marginBottom: '32px' },
   label: { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: '12px' },
-  input: { width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', fontSize: '16px', color: 'white', marginBottom: '16px', fontFamily: 'inherit' },
+  input: { width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', fontSize: '16px', color: 'white', marginBottom: '24px', fontFamily: 'inherit' },
 
   button: { width: '100%', background: '#10b981', color: 'white', border: 'none', padding: '20px', fontSize: '16px', fontWeight: 'bold', borderRadius: '12px', cursor: 'pointer', transition: 'transform 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
 
@@ -59,24 +59,22 @@ const App = () => {
     setResult(null);
 
     const prompt = `
-      As a Senior UX Auditor, analyze the URL: ${url}. 
-      Based on your internal knowledge of this site and real estate best practices (do not attempt to fetch the live URL if blocked):
-      
-      1. Give a Performance Score (0-100).
-      2. List 5 Specific UX improvements to beat competitors like Bayut.
-      3. Write the Tailwind CSS code for a better 'Lead Generation' form component.
+      Analyze this URL: ${url}. 
+      Based on your knowledge of the UAE Real Estate market and psinv.net, provide a professional UX Audit Report. 
+      Include:
+      1. A Performance Score (0-100).
+      2. 3 Critical Fixes to increase lead conversion.
+      3. The React/Tailwind code for a high-converting Contact Form.
 
       Return the response in this strictly valid JSON format:
       {
-        "score": "85",
+        "score": "88",
         "improvements": [
-           { "title": "...", "description": "..." },
-           { "title": "...", "description": "..." },
            { "title": "...", "description": "..." },
            { "title": "...", "description": "..." },
            { "title": "...", "description": "..." }
         ],
-        "codeTitle": "Optimized Lead Gen Form",
+        "codeTitle": "High-Converting Contact Form",
         "code": "..."
       }
       Do not include markdown structure like \`\`\`json. Just the raw JSON.
@@ -85,14 +83,24 @@ const App = () => {
     try {
       const response = await model.generateContent(prompt);
       const text = response.response.text().replace(/```json|```/g, "").trim();
-      const data = JSON.parse(text);
-      setResult(data);
+      try {
+        const data = JSON.parse(text);
+        setResult(data);
+      } catch (jsonErr) {
+        // Fallback: If JSON fails, try to wrap raw text or show as single item
+        console.error("JSON Parse Error, showing raw text", text);
+        setResult({
+          score: "N/A",
+          improvements: [{ title: "Analysis Report", description: text }],
+          codeTitle: "",
+          code: ""
+        });
+      }
     } catch (e: any) {
-      // Fallback for demo if generic error
       console.error("Audit Error", e);
       setResult({
-        score: "N/A",
-        improvements: [{ title: "Audit Error", description: "Could not generate analysis. Please try again." }],
+        score: "Err",
+        improvements: [{ title: "System Error", description: "Audit could not complete. Please try again." }],
         codeTitle: "",
         code: ""
       });
@@ -118,7 +126,7 @@ const App = () => {
         </div>
         <nav style={S.nav}>
           <div style={S.sectionTitle}>Pages</div>
-          {['Home Page', 'Luxury Projects', 'Off-Plan', 'Management', 'Sales Services', 'Mortgage', 'Careers'].map(name => (
+          {['Home Page', 'Luxury Projects', 'Off-Plan', 'Management', 'Sales Services', 'Mortgage', 'Careers', 'Contact Us'].map(name => (
             <div key={name} style={S.navItem}><FileText size={18} />{name}</div>
           ))}
         </nav>
@@ -128,7 +136,7 @@ const App = () => {
       <main style={S.main}>
         <header style={S.header}>
           <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <div style={S.subtitle}>Guaranteed Delivery Engine</div>
+            <div style={S.subtitle}>Implementation Engine v6.1</div>
             <h1 style={S.title}>Zero-Fail UX Audit</h1>
           </div>
         </header>
@@ -147,12 +155,12 @@ const App = () => {
             {analyzing ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Loader2 className="animate-spin" size={20} />
-                AI IS ANALYZING {url.toUpperCase()} ARCHITECTURE...
+                GEMINI IS ANALYZING SITE STRUCTURE...
               </div>
             ) : (
               <>
                 <Zap size={20} fill="white" />
-                RUN GUARANTEED AUDIT
+                RUN AUDIT
               </>
             )}
           </button>
@@ -175,7 +183,7 @@ const App = () => {
                   <AlertOctagon size={18} color="#f59e0b" />
                   {imp.title}
                 </div>
-                <div style={S.findingDesc}>{imp.description}</div>
+                <pre style={{ ...S.findingDesc, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{imp.description}</pre>
               </div>
             ))}
 
