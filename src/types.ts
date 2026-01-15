@@ -5,13 +5,15 @@ import { Timestamp } from 'firebase/firestore';
 export interface Project {
   id: string;
   name: string;
+  baseUrl?: string; // e.g. "https://www.psinv.net"
   propertyType: 'Residential' | 'Commercial' | 'Luxury';
   folders: Folder[];
 }
 
 export interface Folder {
   id: string;
-  name: string; // e.g., "Homepage", "Unit Detail", "Search"
+  name: string; // e.g., "Homepage"
+  url?: string; // e.g. "https://www.psinv.net"
   snapshots: AnalysisSnapshot[];
 }
 
@@ -130,7 +132,7 @@ export interface AnalysisResult {
     metric: string;
   }[];
   executive_deck_markdown: string;
-  
+
   // New Compliance Section
   compliance_risks?: ComplianceRisk[];
 
@@ -157,12 +159,12 @@ export interface Task {
   date: Timestamp;
   projectId: string;
   pageId: string;
-  
+
   assets: {
     myScreenshotUrl?: string;
     competitorScreenshotUrl?: string;
     lighthouseJson?: any;
   };
-  
+
   aiResult?: AnalysisResult;
 }

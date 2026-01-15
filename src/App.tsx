@@ -7,31 +7,28 @@ import { User, Settings } from 'lucide-react';
 import { DBService } from './services/db-service';
 
 // Initialize with consistent mock data
+// Initialize with Real PSI Data
 const INITIAL_PROJECTS: Project[] = [
-  { 
-    id: 'skyline-towers', 
-    name: 'Skyline Towers', 
-    propertyType: 'Luxury', 
-    folders: [
-      { id: 'homepage', name: 'Homepage', snapshots: [] },
-      { id: 'penthouse', name: 'Penthouse Unit', snapshots: [] },
-      { id: 'contact', name: 'Contact Us', snapshots: [] }
-    ] 
-  },
   {
-    id: 'ocean-view',
-    name: 'Ocean View Estates',
-    propertyType: 'Residential',
+    id: 'psinv-net',
+    name: 'Property Shop Investment',
+    baseUrl: 'https://www.psinv.net',
+    propertyType: 'Luxury',
     folders: [
-      { id: 'landing', name: 'Landing Page', snapshots: [] }
+      { id: 'home', name: 'Home Page', url: 'https://www.psinv.net', snapshots: [] },
+      { id: 'contact-us', name: 'Contact Us', url: 'https://psinv.net/en/contact-us', snapshots: [] },
+      { id: 'about-us', name: 'About Us', url: 'https://psinv.net/en/about-us', snapshots: [] },
+      { id: 'careers', name: 'Careers', url: 'https://psinv.net/en/careers', snapshots: [] },
+      { id: 'luxury-projects', name: 'Luxury Projects', url: 'https://psinv.net/en/project/luxury-project-uae/', snapshots: [] },
+      { id: 'sales-services', name: 'Sales Services', url: 'https://psinv.net/en/services/sales/sales-services/', snapshots: [] }
     ]
   }
 ];
 
 const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
-  const [activeProjectId, setActiveProjectId] = useState<string>('skyline-towers');
-  const [activeFolderId, setActiveFolderId] = useState<string>('homepage');
+  const [activeProjectId, setActiveProjectId] = useState<string>('psinv-net');
+  const [activeFolderId, setActiveFolderId] = useState<string>('home');
 
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeFolder = activeProject?.folders.find(f => f.id === activeFolderId);
@@ -40,14 +37,14 @@ const App: React.FC = () => {
     try {
       // 1. Create in Firestore (best effort)
       const pageId = await DBService.createPage(projectId, pageName);
-      
+
       // 2. Update Local State immediately
       setProjects(prevProjects => prevProjects.map(p => {
         if (p.id === projectId) {
           return {
             ...p,
             folders: [
-              ...p.folders, 
+              ...p.folders,
               { id: pageId, name: pageName, snapshots: [] }
             ]
           };
@@ -65,8 +62,8 @@ const App: React.FC = () => {
       const mockId = pageName.toLowerCase().replace(/\s+/g, '-');
       setProjects(prevProjects => prevProjects.map(p => {
         if (p.id === projectId) {
-           if (p.folders.find(f => f.id === mockId)) return p;
-           return {
+          if (p.folders.find(f => f.id === mockId)) return p;
+          return {
             ...p,
             folders: [...p.folders, { id: mockId, name: pageName, snapshots: [] }]
           };
@@ -95,7 +92,7 @@ const App: React.FC = () => {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
+        <Sidebar
           projects={projects}
           activeProjectId={activeProjectId}
           activeFolderId={activeFolderId}
@@ -106,7 +103,7 @@ const App: React.FC = () => {
           }}
           onAddPage={handleAddPage}
         />
-        <Workspace 
+        <Workspace
           activeProject={activeProject}
           activeFolder={activeFolder}
         />
