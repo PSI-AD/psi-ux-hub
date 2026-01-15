@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal, Globe, Search, AlertTriangle } from 'lucide-react';
+import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal, Globe, Search, AlertTriangle, Loader2 } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // GEMINI SETUP
@@ -148,25 +148,25 @@ const App = () => {
 
       if (mode === 'competitor') {
         if (hasUrls) {
-          // TEXT-BASED DEEP SCAN (Internal Knowledge - No API fetch)
+          // KNOWLEDGE-BASED COMPETITOR SCAN
           prompt = `
-                  Act as a Senior UX Strategist & Technical Lead.
-                  Analyze these two URLs using your INTERNAL knowledge of these platforms (Do not attempt to scrape if blocked).
-                  
-                  1. PSI Target: ${psiUrl}
-                  2. Competitor: ${compUrl} (e.g., Property Finder, Bayut, Dubizzle)
+                  Act as a Senior UX Strategist.
+                  The user wants a comparison of:
+                  1. PSI URL: ${psiUrl}
+                  2. Competitor URL: ${compUrl}
 
-                  COMPARE AND CONTRAST specifically on:
+                  Based on your training data and INTERNAL KNOWLEDGE of these brands/sites (do not fetch live):
+                  Compare them on:
                   1. Search Filter Depth.
-                  2. Mobile Responsiveness & Thumb-Zone.
+                  2. Mobile Responsiveness.
                   3. Trust Signals.
-                  4. Speed vs. Visual Quality.
+                  4. Speed vs Visuals.
 
-                  For each gap where the Competitor wins:
+                  For each gap:
                   1. 'title': The Issue.
-                  2. 'description': Why the competitor is winning.
-                  3. 'technicalSolution': "To beat [Competitor], change [Component] to..." (React/Tailwind spec).
-                  4. 'implementationPrompt': A command: "Apply this update to [filename]..."
+                  2. 'description': Why the competitor wins.
+                  3. 'technicalSolution': "To beat [Competitor], change [Component] to..."
+                  4. 'implementationPrompt': "Apply this update to [filename]..."
 
                   Return a strictly valid JSON array of objects.
                 `;
@@ -199,15 +199,16 @@ const App = () => {
                 `;
           parts.push(await fileToGenerativePart(file1!));
         } else {
-          // URL Crawler Mode
+          // KNOWLEDGE-BASED AUDIT (NO FETCH)
           prompt = `
-                    You are a UX Auditor. 
-                    Visit this URL: ${psiUrl} (or use your internal knowledge if you cannot access it live).
-                    Perform a professional audit covering: Visual Design, Conversion Friction, and Mobile UX. 
-                    Provide a table of technical fixes.
+                    The user wants a UX/UI audit for the URL: ${psiUrl}.
+                    Based on your training data and KNOWLEDGE of this specific brand/site (do not fetch live), provide:
+                    1. A Performance Score (Estimated).
+                    2. Three 'Critical UX Fixes' to increase property lead conversions.
+                    3. The Tailwind CSS code to implement the #1 most important fix.
                     
                     Return a strictly valid JSON array of objects: 
-                    [{ "title": "...", "description": "...", "technicalSolution": "React/Tailwind fix", "implementationPrompt": "..." }]
+                    [{ "title": "...", "description": "...", "technicalSolution": "...", "implementationPrompt": "..." }]
                 `;
         }
         parts.push(prompt);
@@ -231,11 +232,7 @@ const App = () => {
 
     } catch (e: any) {
       console.error("Gemini Error", e);
-      if (e.message.includes("403") || e.message.includes("fetch")) {
-        setErrorMsg("URL Fetch blocked by site security. Please upload a screenshot for a Visual Audit.");
-      } else {
-        setErrorMsg(`Audit Error: ${e.message}. Try uploading a screenshot instead.`);
-      }
+      setErrorMsg(`Audit Error: ${e.message}. Try uploading a screenshot.`);
     } finally {
       setAnalyzing(false);
     }
@@ -292,7 +289,7 @@ const App = () => {
       <main style={S.main}>
         <header style={S.header}>
           <div>
-            <div style={S.subtitle}>Implementation Engine v5.1</div>
+            <div style={S.subtitle}>Implementation Engine v5.2</div>
             <h1 style={S.title}>{mode === 'competitor' ? 'Competitive Benchmarking' : 'Forensic Audit'}</h1>
           </div>
           {/* COMPARISON TOGGLE */}
@@ -393,7 +390,10 @@ const App = () => {
 
           <button disabled={analyzing} onClick={handleAudit} style={{ ...S.button, opacity: analyzing ? 0.7 : 1, marginTop: 24 }}>
             {analyzing ? (
-              'RUNNING DEEP INTELLIGENCE SCAN...'
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Loader2 className="animate-spin" size={20} />
+                CONSULTING KNOWLEDGE BASE...
+              </div>
             ) : (
               <>
                 <Zap size={20} fill="white" />
@@ -408,7 +408,7 @@ const App = () => {
           <div style={S.resultBox}>
             <div style={S.resultHeader}>
               <Eye size={20} />
-              Competitive Strategy & Solutions
+              Strategy & Solutions (Knowledge-Based)
             </div>
             {findings.map((f, i) => (
               <div key={i} style={S.findingItem}>
@@ -419,7 +419,7 @@ const App = () => {
                 <div style={S.findingDesc}>{f.description}</div>
 
                 <div style={{ background: '#0f172a', padding: 16, borderRadius: 8, fontSize: 13, color: '#cbd5e1', marginBottom: 16 }}>
-                  <strong style={{ color: '#10b981', display: 'block', marginBottom: 4 }}>TECHNICAL WIN:</strong>
+                  <strong style={{ color: '#10b981', display: 'block', marginBottom: 4 }}>TECHNICAL SOLUTION:</strong>
                   {f.technicalSolution}
                 </div>
 
