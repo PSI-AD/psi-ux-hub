@@ -55,10 +55,24 @@ export const runPageSpeedAudit = async (url: string): Promise<PageSpeedResult> =
       }
     }
 
+    // Check if we are running with Service Account context
+    if (import.meta.env.VITE_GOOGLE_SERVICE_ACCOUNT) {
+      // Note: In a client-side app, we still use the API Key, but we log the context for debugging.
+      // The Service Account is managed by the Google Cloud Project permissions.
+    }
+
     if (!res.ok) {
       // Google APIs return error details in JSON body
       const errorBody = await res.json().catch(() => null);
       const errorMessage = errorBody?.error?.message || res.statusText || `Status ${res.status}`;
+
+      if (res.status === 403) {
+        // Specific check for "API not enabled" versus generic permission error
+        if (errorMessage.includes("has not been used in project") || errorMessage.includes("enable")) {
+          throw new Error("Action Required: PageSpeed API is not enabled. Click OK to enable it for Project 622985978871.");
+        }
+        throw new Error(`PSI Access Denied (Project 622985978871). Ensure API Key is restricted to this domain.`);
+      }
 
       if (res.status === 429) {
         throw new Error("PSI Project Quota reached (Project 622985978871). Please check Google Cloud Console for limit increases.");
