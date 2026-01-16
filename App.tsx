@@ -1,210 +1,244 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Home, Phone, Briefcase, Building2, Key, Percent, Users, FileText, CheckCircle2, AlertOctagon, Upload, Play, X, Swords, ArrowRight, Code, Copy, Eye, Zap, Camera, Terminal, Globe, Search, AlertTriangle, Loader2 } from 'lucide-react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Upload, Zap, FileText, CheckCircle2, Loader2, Link } from 'lucide-react';
 
-// GEMINI SETUP
-const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || "";
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-// STYLES - Clean Dashboard
 const S = {
-  container: { display: 'flex', height: '100vh', fontFamily: "'Inter', sans-serif", background: '#0f172a', color: '#f1f5f9' },
-  sidebar: { width: '280px', background: '#1e293b', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column' as const },
-  brand: { padding: '24px', borderBottom: '1px solid #334155', fontSize: '18px', fontWeight: 'bold', color: '#10b981', display: 'flex', alignItems: 'center', gap: '10px' },
-  nav: { flex: 1, padding: '16px', overflowY: 'auto' as const },
-  navItem: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', marginBottom: '4px', fontSize: '14px', color: '#94a3b8', transition: 'all 0.2s', textDecoration: 'none' },
-  main: { flex: 1, padding: '40px', overflowY: 'auto' as const, display: 'flex', flexDirection: 'column' as const },
-  header: { marginBottom: '40px', paddingBottom: '20px', borderBottom: '1px solid #334155' },
-  title: { fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', color: '#f8fafc' },
-  subtitle: { fontSize: '14px', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px' },
-
-  card: { background: '#1e293b', borderRadius: '24px', padding: '40px', border: '1px solid #334155', width: '100%', maxWidth: '800px', margin: '0 auto', marginBottom: '32px' },
-  label: { display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: '12px' },
-  input: { width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px', fontSize: '16px', color: 'white', marginBottom: '24px', fontFamily: 'inherit' },
-
-  button: { width: '100%', background: '#10b981', color: 'white', border: 'none', padding: '20px', fontSize: '16px', fontWeight: 'bold', borderRadius: '12px', cursor: 'pointer', transition: 'transform 0.1s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
-
-  resultBox: { marginTop: '40px', background: '#0f172a', borderRadius: '16px', padding: '0', border: '1px solid #334155', overflow: 'hidden', maxWidth: '800px', margin: '40px auto' },
-  resultHeader: { padding: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 'bold', color: '#f8fafc', background: '#1e293b', borderBottom: '1px solid #334155' },
-  findingItem: { padding: '24px', borderBottom: '1px solid #334155' },
-  findingTitle: { fontSize: '16px', fontWeight: 'bold', color: '#f8fafc', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' },
-  findingDesc: { fontSize: '14px', color: '#94a3b8', marginBottom: '16px', lineHeight: 1.6 },
-
-  codeBlock: { background: '#1e1e1e', padding: '20px', borderRadius: '12px', marginTop: '16px', overflowX: 'auto' as const, border: '1px solid #333' },
-  codePre: { fontFamily: 'monospace', fontSize: '13px', color: '#d4d4d4', margin: 0 },
-
-  copyBtn: { background: '#3b82f6', border: 'none', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' },
-};
-
-// TYPES
-type AuditResult = {
-  score: string;
-  improvements: Array<{
-    title: string;
-    description: string;
-  }>;
-  codeTitle: string;
-  code: string;
+  container: {
+    minHeight: '100vh',
+    background: '#0f172a',
+    color: '#f8fafc',
+    fontFamily: "'Inter', sans-serif",
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+  },
+  card: {
+    background: '#1e293b',
+    border: '1px solid #334155',
+    borderRadius: '24px',
+    padding: '40px',
+    width: '100%',
+    maxWidth: '600px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+  },
+  header: {
+    marginBottom: '32px',
+    textAlign: 'center' as const,
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#f8fafc',
+    marginBottom: '8px',
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: '#94a3b8',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '1px',
+    fontWeight: 600,
+  },
+  inputGroup: {
+    marginBottom: '24px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: 'bold',
+    color: '#cbd5e1',
+    marginBottom: '10px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  input: {
+    width: '100%',
+    background: '#0f172a',
+    border: '1px solid #334155',
+    borderRadius: '12px',
+    padding: '16px',
+    fontSize: '15px',
+    color: 'white',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+  },
+  fileDrop: {
+    width: '100%',
+    background: '#0f172a',
+    border: '2px dashed #334155',
+    borderRadius: '12px',
+    padding: '32px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  fileDropActive: {
+    borderColor: '#10b981',
+    background: 'rgba(16, 185, 129, 0.05)',
+  },
+  button: {
+    width: '100%',
+    background: '#10b981',
+    color: 'white',
+    border: 'none',
+    padding: '18px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '10px',
+    marginTop: '10px',
+  },
+  msgBox: {
+    marginTop: '24px',
+    padding: '16px',
+    background: 'rgba(16, 185, 129, 0.1)',
+    border: '1px solid #10b981',
+    borderRadius: '12px',
+    color: '#10b981',
+    fontSize: '14px',
+    fontWeight: 500,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  }
 };
 
 const App = () => {
-  const [url, setUrl] = useState('psinv.net');
-  const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<AuditResult | null>(null);
+  const [url, setUrl] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('');
 
-  const handleAudit = async () => {
-    setAnalyzing(true);
-    setResult(null);
-
-    const prompt = `
-      Analyze this URL: ${url}. 
-      Based on your knowledge of the UAE Real Estate market and psinv.net, provide a professional UX Audit Report. 
-      Include:
-      1. A Performance Score (0-100).
-      2. 3 Critical Fixes to increase lead conversion.
-      3. The React/Tailwind code for a high-converting Contact Form.
-
-      Return the response in this strictly valid JSON format:
-      {
-        "score": "88",
-        "improvements": [
-           { "title": "...", "description": "..." },
-           { "title": "...", "description": "..." },
-           { "title": "...", "description": "..." }
-        ],
-        "codeTitle": "High-Converting Contact Form",
-        "code": "..."
-      }
-      Do not include markdown structure like \`\`\`json. Just the raw JSON.
-    `;
-
-    try {
-      const response = await model.generateContent(prompt);
-      const text = response.response.text().replace(/```json|```/g, "").trim();
-      try {
-        const data = JSON.parse(text);
-        setResult(data);
-      } catch (jsonErr) {
-        // Fallback: If JSON fails, try to wrap raw text or show as single item
-        console.error("JSON Parse Error, showing raw text", text);
-        setResult({
-          score: "N/A",
-          improvements: [{ title: "Analysis Report", description: text }],
-          codeTitle: "",
-          code: ""
-        });
-      }
-    } catch (e: any) {
-      console.error("Audit Error", e);
-      setResult({
-        score: "Err",
-        improvements: [{ title: "System Error", description: "Audit could not complete. Please try again." }],
-        codeTitle: "",
-        code: ""
-      });
-    } finally {
-      setAnalyzing(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
     }
   };
 
-  const copyCode = () => {
-    if (result?.code) {
-      navigator.clipboard.writeText(result.code);
-      alert("Code Copied!");
+  const handleProcess = () => {
+    if (!url && !file) {
+      alert("Please provide at least a URL or a Screenshot file.");
+      return;
     }
+
+    setScanning(true);
+    setStatusMsg("Scanning...");
+
+    // Simulate processing delay
+    setTimeout(() => {
+      setScanning(false);
+      setStatusMsg("Data Received. Ready for Step 2 Analysis.");
+    }, 2000);
   };
 
   return (
     <div style={S.container}>
-      {/* SIDEBAR */}
-      <aside style={S.sidebar}>
-        <div style={S.brand}>
-          <div style={{ width: 32, height: 32, background: '#10b981', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0f172a', fontWeight: 'bold' }}>P</div>
-          PSI UX HUB
+      <div style={S.card}>
+        <div style={S.header}>
+          <div style={S.subtitle}>PSI UX Auditor</div>
+          <h1 style={S.title}>Step 1: Input Data</h1>
         </div>
-        <nav style={S.nav}>
-          <div style={S.sectionTitle}>Pages</div>
-          {['Home Page', 'Luxury Projects', 'Off-Plan', 'Management', 'Sales Services', 'Mortgage', 'Careers', 'Contact Us'].map(name => (
-            <div key={name} style={S.navItem}><FileText size={18} />{name}</div>
-          ))}
-        </nav>
-      </aside>
 
-      {/* MAIN */}
-      <main style={S.main}>
-        <header style={S.header}>
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <div style={S.subtitle}>Implementation Engine v6.1</div>
-            <h1 style={S.title}>Zero-Fail UX Audit</h1>
-          </div>
-        </header>
-
-        <div style={S.card}>
-          <div style={S.label}>TARGET URL</div>
+        {/* INPUT ZONE 1: URL */}
+        <div style={S.inputGroup}>
+          <label style={S.label}>
+            <Link size={16} /> LIGHTHOUSE REPORT URL
+          </label>
           <input
-            value={url}
-            onChange={e => setUrl(e.target.value)}
             type="text"
             style={S.input}
-            placeholder="psinv.net"
+            placeholder="https://pagespeed.web.dev/..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
           />
-
-          <button disabled={analyzing} onClick={handleAudit} style={{ ...S.button, opacity: analyzing ? 0.7 : 1 }}>
-            {analyzing ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Loader2 className="animate-spin" size={20} />
-                GEMINI IS ANALYZING SITE STRUCTURE...
-              </div>
-            ) : (
-              <>
-                <Zap size={20} fill="white" />
-                RUN AUDIT
-              </>
-            )}
-          </button>
         </div>
 
-        {/* RESULTS */}
-        {result && (
-          <div style={S.resultBox}>
-            <div style={S.resultHeader}>
-              <Eye size={20} />
-              Audit Results
-              <span style={{ marginLeft: 'auto', background: '#10b981', color: '#064e3b', fontSize: 13, padding: '4px 12px', borderRadius: 20 }}>
-                SCORE: {result.score}/100
-              </span>
-            </div>
+        {/* INPUT ZONE 2: FILE UPLOAD */}
+        <div style={S.inputGroup}>
+          <label style={S.label}>
+            <Upload size={16} /> LIGHTHOUSE SCREENSHOTS
+          </label>
+          <div
+            style={{
+              ...S.fileDrop,
+              ...(file ? S.fileDropActive : {})
+            }}
+            onClick={() => document.getElementById('fileInput')?.click()}
+          >
+            <input
+              id="fileInput"
+              type="file"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+              accept="image/*,.pdf"
+            />
 
-            {result.improvements.map((imp, i) => (
-              <div key={i} style={S.findingItem}>
-                <div style={S.findingTitle}>
-                  <AlertOctagon size={18} color="#f59e0b" />
-                  {imp.title}
-                </div>
-                <pre style={{ ...S.findingDesc, whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{imp.description}</pre>
-              </div>
-            ))}
-
-            {result.code && (
-              <div style={{ padding: '24px', background: '#1e293b' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ color: '#10b981', fontWeight: 'bold' }}>{result.codeTitle || "Recommended Component"}</div>
-                  <button onClick={copyCode} style={S.copyBtn}><Copy size={13} /> Copy Code</button>
-                </div>
-                <div style={S.codeBlock}>
-                  <pre style={S.codePre}>{result.code}</pre>
-                </div>
-              </div>
+            {file ? (
+              <>
+                <FileText size={32} color="#10b981" style={{ marginBottom: 12 }} />
+                <span style={{ color: '#f8fafc', fontWeight: 500 }}>{file.name}</span>
+                <span style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                  {(file.size / 1024).toFixed(1)} KB • Ready to upload
+                </span>
+              </>
+            ) : (
+              <>
+                <Upload size={32} color="#64748b" style={{ marginBottom: 12 }} />
+                <span style={{ color: '#94a3b8' }}>Click to upload screenshots</span>
+                <span style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>
+                  Supports JPG, PNG, PDF
+                </span>
+              </>
             )}
           </div>
-        )}
+        </div>
 
-      </main>
+        {/* ACTION BUTTON */}
+        <button
+          onClick={handleProcess}
+          disabled={scanning}
+          style={{
+            ...S.button,
+            opacity: scanning ? 0.7 : 1,
+            cursor: scanning ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {scanning ? (
+            <>
+              <Loader2 className="animate-spin" size={20} />
+              PROCESSING...
+            </>
+          ) : (
+            <>
+              <Zap size={20} fill="white" />
+              PROCESS REPORT
+            </>
+          )}
+        </button>
+
+        {/* STATUS MESSAGE */}
+        {statusMsg && !scanning && (
+          <div style={S.msgBox}>
+            <CheckCircle2 size={20} />
+            {statusMsg}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
+export default App;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
