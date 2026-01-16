@@ -44,7 +44,6 @@ const S = {
     marginBottom: '24px',
   },
   label: {
-    display: 'block',
     fontSize: '13px',
     fontWeight: 'bold',
     color: '#cbd5e1',
