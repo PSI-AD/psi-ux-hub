@@ -520,7 +520,7 @@ export const ProjectSettings: React.FC<ProjectSettingsProps> = ({
 
       {showReportPreview && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-12 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-7xl h-full overflow-y-auto custom-scrollbar bg-background rounded-[2rem] border border-border relative shadow-2xl">
+          <div className="w-full max-w-7xl h-full overflow-y-auto custom-scrollbar bg-background rounded-lg border border-border relative shadow-2xl">
             <ReportPreview project={project} />
             <button onClick={() => setShowReportPreview(false)} className="fixed top-16 right-16 p-4 bg-surface hover:bg-secondary text-[var(--text-primary)] rounded-full transition-all border border-border z-[1001]"><X size={24} /></button>
           </div>

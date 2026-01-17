@@ -430,17 +430,17 @@ function MainApp() {
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowNewProjectModal(false)} />
           <div className="relative w-full max-w-lg bg-surface border border-border rounded-lg p-8 shadow-2xl animate-in zoom-in-95 duration-300">
             <button onClick={() => setShowNewProjectModal(false)} className="absolute top-6 right-6 text-white hover:text-white"><X size={20} /></button>
-            <h2 className="text-2xl font-semibold mb-1">New Project</h2>
+            <h2 className="text-2xl font-semibold mb-1 text-white">New Project</h2>
             <p className="text-white text-sm mb-8">Enter project details to initialize workspace</p>
 
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2"><Target size={12} /> Project Name</label>
-                <input type="text" value={newProject.name} onChange={(e) => setNewProject({ ...newProject, name: e.target.value })} placeholder="e.g., Emaar Beachfront" className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
+                <input type="text" value={newProject.name} onChange={(e) => setNewProject({ ...newProject, name: e.target.value })} placeholder="e.g., Emaar Beachfront" className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-white" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2"><Globe size={12} /> Root Domain</label>
-                <input type="text" value={newProject.url} onChange={(e) => setNewProject({ ...newProject, url: e.target.value })} placeholder="https://..." className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
+                <input type="text" value={newProject.url} onChange={(e) => setNewProject({ ...newProject, url: e.target.value })} placeholder="https://..." className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-white" />
               </div>
             </div>
 

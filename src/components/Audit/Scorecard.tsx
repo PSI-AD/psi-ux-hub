@@ -38,7 +38,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">/ 100</span>
           </div>
         </div>
-        <div className="px-4 py-1.5 bg-surface border border-border rounded-full text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-all">
+        <div className="px-4 py-1.5 bg-surface border border-border rounded-lg text-[10px] font-black uppercase tracking-widest text-white group-hover:text-primary transition-all">
           {label}
         </div>
       </div>
@@ -55,11 +55,11 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
   ];
 
   return (
-    <div className="bg-surface border border-border rounded-3xl p-12 space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 shadow-sm">
+    <div className="bg-surface border border-border rounded-lg p-12 space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 shadow-sm">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
         <div className="space-y-4 max-w-sm text-center lg:text-left">
-          <h3 className="text-3xl font-black text-[var(--text-primary)] uppercase tracking-tighter font-luxury">Heuristic Diagnostic</h3>
-          <p className="text-slate-500 text-sm leading-relaxed font-medium">
+          <h3 className="text-3xl font-black text-white uppercase tracking-tighter font-luxury">Heuristic Diagnostic</h3>
+          <p className="text-white text-sm leading-relaxed font-medium">
             Automated architectural audit utilizing world-class UX standards for elite real estate portfolios.
           </p>
           <div className="flex items-center gap-3 pt-4 justify-center lg:justify-start">
@@ -83,7 +83,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
         <div className="space-y-8">
           <div className="flex items-center gap-3">
             <ShieldCheck className="text-primary" size={20} />
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--text-primary)]">Attribute Integrity</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white">Attribute Integrity</h4>
           </div>
           <div className="space-y-6">
             {categories.map((cat) => {
@@ -95,20 +95,20 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
                 <div key={cat.key} className="space-y-2">
                   <div className="flex justify-between items-end">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{cat.label}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white">{cat.label}</span>
                       {isCritical && (
-                        <span className="px-2 py-0.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded text-[7px] font-black uppercase">Critical Risk</span>
+                        <span className="px-2 py-0.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-lg text-[7px] font-black uppercase">Critical Risk</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-slate-500 text-[10px]">{curVal}</span>
-                      <ArrowRight size={10} className="text-slate-400" />
+                      <span className="text-white text-[10px]">{curVal}</span>
+                      <ArrowRight size={10} className="text-white" />
                       <span className="text-primary text-[10px] font-bold">{propVal}</span>
-                      <span className="text-slate-300 text-[8px]">/ {cat.max}</span>
+                      <span className="text-white text-[8px]">/ {cat.max}</span>
                     </div>
                   </div>
-                  <div className="w-full h-1 bg-surface border border-border rounded-full overflow-hidden flex">
-                    <div className="h-full bg-slate-400 opacity-40 transition-all duration-1000" style={{ width: `${(curVal / cat.max) * 100}%` }} />
+                  <div className="w-full h-1 bg-surface border border-border rounded-lg overflow-hidden flex">
+                    <div className="h-full bg-white opacity-40 transition-all duration-1000" style={{ width: `${(curVal / cat.max) * 100}%` }} />
                     <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${((propVal - curVal) / cat.max) * 100}%` }} />
                   </div>
                 </div>
@@ -121,11 +121,11 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
         <div className="space-y-8">
           <div className="flex items-center gap-3">
             <AlertTriangle className="text-rose-500" size={20} />
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-[var(--text-primary)]">Remediation Rationale</h4>
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-white">Remediation Rationale</h4>
           </div>
           <div className="space-y-4">
             {rationale.map((item, i) => (
-              <div key={i} className="p-5 bg-background border border-border rounded-2xl group hover:border-primary/30 transition-all">
+              <div key={i} className="p-5 bg-background border border-border rounded-lg group hover:border-primary/30 transition-all">
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-primary border border-border group-hover:border-primary/30">
                     <Zap size={14} />
@@ -135,10 +135,10 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
                       <span className="text-[9px] font-black uppercase tracking-widest text-primary">{item.category}</span>
                       <span className="text-[8px] font-black text-emerald-500">+{item.impactScore}% Impact</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed italic">"{item.currentObservation}"</p>
+                    <p className="text-[11px] text-white leading-relaxed italic">"{item.currentObservation}"</p>
                     <div className="flex items-center gap-2 pt-1">
                       <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                      <p className="text-[10px] text-[var(--text-primary)] font-bold">{item.proposedImprovement}</p>
+                      <p className="text-[10px] text-white font-bold">{item.proposedImprovement}</p>
                     </div>
                   </div>
                 </div>
