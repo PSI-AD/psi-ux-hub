@@ -7,6 +7,12 @@ interface ReportPreviewProps {
   benchmarks?: BenchmarkScore[];
 }
 
+const safeString = (val: any): string => {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object') return JSON.stringify(val);
+  return String(val);
+};
+
 const RadarChart = ({ scores }: { scores: BenchmarkScore[] }) => {
   const size = 300;
   const center = size / 2;
@@ -95,7 +101,7 @@ const RadarChart = ({ scores }: { scores: BenchmarkScore[] }) => {
 
 export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmarks }) => {
   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  
+
   // Default benchmarks if none provided
   const activeBenchmarks = benchmarks || [
     { category: 'Trust Signaling', clientScore: 65, competitorAvg: 85 },
@@ -109,14 +115,14 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmark
       <section className="h-[900px] flex flex-col items-center justify-center border-b border-white/10 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-radial-gradient from-psi-gold/5 via-transparent to-transparent opacity-50" />
         <div className="w-48 h-48 rounded-[3rem] bg-psi-gold/10 flex items-center justify-center border border-psi-gold/30 shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-12">
-           {project.brand.logo ? <img src={project.brand.logo} className="w-24 h-24 object-contain" /> : <ShieldCheck className="text-psi-gold" size={64} />}
+          {project.brand.logo ? <img src={project.brand.logo} className="w-24 h-24 object-contain" /> : <ShieldCheck className="text-psi-gold" size={64} />}
         </div>
         <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 luxury-text-gradient">Luxury Transformation</h1>
         <p className="text-2xl font-luxury text-psi-gold italic mb-12">Architectural UX Synthesis & Market Optimization</p>
         <div className="h-px w-32 bg-psi-gold/30 mb-12" />
         <div className="space-y-2">
-          <h2 className="text-xl font-black uppercase tracking-[0.4em] text-white">{project.name}</h2>
-          <p className="text-slate-500 font-bold uppercase tracking-widest">{project.baseUrl}</p>
+          <h2 className="text-xl font-black uppercase tracking-[0.4em] text-white">{safeString(project.name)}</h2>
+          <p className="text-slate-500 font-bold uppercase tracking-widest">{safeString(project.baseUrl)}</p>
         </div>
         <p className="absolute bottom-20 text-[10px] font-black uppercase tracking-[0.6em] text-slate-700">{date} • STRATEGIC MANDATE CONFIDENTIAL</p>
       </section>
@@ -144,14 +150,14 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmark
                 <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Primary Identity</p>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl shadow-xl" style={{ backgroundColor: project.brand.primaryColor }} />
-                  <span className="text-xs font-mono font-bold text-white uppercase">{project.brand.primaryColor}</span>
+                  <span className="text-xs font-mono font-bold text-white uppercase">{safeString(project.brand.primaryColor)}</span>
                 </div>
               </div>
               <div className="space-y-4">
                 <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Secondary Identity</p>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl shadow-xl border border-white/10" style={{ backgroundColor: project.brand.secondaryColor }} />
-                  <span className="text-xs font-mono font-bold text-white uppercase">{project.brand.secondaryColor}</span>
+                  <span className="text-xs font-mono font-bold text-white uppercase">{safeString(project.brand.secondaryColor)}</span>
                 </div>
               </div>
             </div>
@@ -227,31 +233,31 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmark
             return (
               <div key={page.id} className="space-y-10">
                 <div className="flex items-center justify-between">
-                   <h4 className="text-xl font-black uppercase tracking-tighter">{i + 1}. {page.name} Optimization</h4>
-                   <div className="px-4 py-1.5 bg-psi-gold/10 border border-psi-gold/20 rounded-full text-[9px] font-black uppercase tracking-widest text-psi-gold">
-                      Strategic Commitment Applied
-                   </div>
+                  <h4 className="text-xl font-black uppercase tracking-tighter">{i + 1}. {safeString(page.name)} Optimization</h4>
+                  <div className="px-4 py-1.5 bg-psi-gold/10 border border-psi-gold/20 rounded-full text-[9px] font-black uppercase tracking-widest text-psi-gold">
+                    Strategic Commitment Applied
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-10">
-                   <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 text-center">Legacy Interface</p>
-                      <div className="rounded-[2.5rem] overflow-hidden border border-white/5 bg-slate-900 aspect-video">
-                         <img src={latest.thumbnail} className="w-full h-full object-cover grayscale opacity-40" />
-                      </div>
-                   </div>
-                   <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-psi-gold text-center">Proposed Revision</p>
-                      <div className="rounded-[2.5rem] overflow-hidden border border-psi-gold/30 bg-slate-950 aspect-video shadow-[0_20px_60px_rgba(212,175,55,0.1)]">
-                         <img src={latest.redesignImg} className="w-full h-full object-cover" />
-                      </div>
-                   </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 text-center">Legacy Interface</p>
+                    <div className="rounded-[2.5rem] overflow-hidden border border-white/5 bg-slate-900 aspect-video">
+                      <img src={latest.thumbnail} className="w-full h-full object-cover grayscale opacity-40" />
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-psi-gold text-center">Proposed Revision</p>
+                    <div className="rounded-[2.5rem] overflow-hidden border border-psi-gold/30 bg-slate-950 aspect-video shadow-[0_20px_60px_rgba(212,175,55,0.1)]">
+                      <img src={latest.redesignImg} className="w-full h-full object-cover" />
+                    </div>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-6">
-                   {latest.uxIssues.slice(0, 3).map((issue, idx) => (
-                     <div key={idx} className="glass-card p-6 border-l-2 border-l-psi-gold">
-                        <p className="text-xs text-slate-300 leading-relaxed italic">"{issue}"</p>
-                     </div>
-                   ))}
+                  {latest.uxIssues.slice(0, 3).map((issue, idx) => (
+                    <div key={idx} className="glass-card p-6 border-l-2 border-l-psi-gold">
+                      <p className="text-xs text-slate-300 leading-relaxed italic">"{issue}"</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             );
@@ -272,33 +278,33 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmark
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-           {[
-             { title: 'Obsidian Aesthetics', desc: 'Transitioning to deep contrasts and glassmorphic textures to signify professional stability and luxury exclusivity.' },
-             { title: 'Frictionless Architecture', desc: 'Removing structural noise to ensure the most critical business paths (Properties, Financing) are cleared for conversion.' },
-             { title: 'Market Convergence', desc: 'Aligning UX density with top-tier UAE competitors to prevent user migration due to interface frustration.' },
-             { title: 'Brand Cohesion', desc: 'Extracting and enforcing brand DNA across every module, ensuring a unified global presence.' }
-           ].map((item, i) => (
-             <div key={i} className="glass-card p-10 flex gap-8 items-start hover:bg-white/5 transition-all">
-                <div className="text-3xl font-black text-psi-gold/20 font-luxury">{i+1}</div>
-                <div className="space-y-2">
-                   <h5 className="text-sm font-black uppercase tracking-widest text-white">{item.title}</h5>
-                   <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
-                </div>
-             </div>
-           ))}
+          {[
+            { title: 'Obsidian Aesthetics', desc: 'Transitioning to deep contrasts and glassmorphic textures to signify professional stability and luxury exclusivity.' },
+            { title: 'Frictionless Architecture', desc: 'Removing structural noise to ensure the most critical business paths (Properties, Financing) are cleared for conversion.' },
+            { title: 'Market Convergence', desc: 'Aligning UX density with top-tier UAE competitors to prevent user migration due to interface frustration.' },
+            { title: 'Brand Cohesion', desc: 'Extracting and enforcing brand DNA across every module, ensuring a unified global presence.' }
+          ].map((item, i) => (
+            <div key={i} className="glass-card p-10 flex gap-8 items-start hover:bg-white/5 transition-all">
+              <div className="text-3xl font-black text-psi-gold/20 font-luxury">{i + 1}</div>
+              <div className="space-y-2">
+                <h5 className="text-sm font-black uppercase tracking-widest text-white">{item.title}</h5>
+                <p className="text-xs text-slate-500 leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* FINAL PAGE */}
       <section className="py-40 text-center border-t border-white/10 space-y-12">
-         <div className="w-20 h-20 rounded-3xl bg-psi-gold/10 border border-psi-gold/30 flex items-center justify-center text-psi-gold mx-auto">
-            <Zap size={32} />
-         </div>
-         <div className="space-y-4">
-            <h3 className="text-4xl font-black uppercase tracking-tighter luxury-text-gradient">Ready for Implementation</h3>
-            <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed">The proposed luxury vision is backed by market benchmarking and brand-faithful synthesis. All code fixes are ready for production deployment via the Agency Pro Vault.</p>
-         </div>
-         <p className="text-[10px] font-black uppercase tracking-[1em] text-slate-800 pt-20">Property Shop Investment Architectural Control Hub</p>
+        <div className="w-20 h-20 rounded-3xl bg-psi-gold/10 border border-psi-gold/30 flex items-center justify-center text-psi-gold mx-auto">
+          <Zap size={32} />
+        </div>
+        <div className="space-y-4">
+          <h3 className="text-4xl font-black uppercase tracking-tighter luxury-text-gradient">Ready for Implementation</h3>
+          <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed">The proposed luxury vision is backed by market benchmarking and brand-faithful synthesis. All code fixes are ready for production deployment via the Agency Pro Vault.</p>
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[1em] text-slate-800 pt-20">Property Shop Investment Architectural Control Hub</p>
       </section>
     </div>
   );
