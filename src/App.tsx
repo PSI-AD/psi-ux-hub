@@ -34,11 +34,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     if (this.state.hasError) {
       return (
         <div className="h-screen bg-background flex flex-col items-center justify-center p-12 text-center">
-          <div className="w-20 h-20 rounded-2xl bg-red-500/10 flex items-center justify-center mb-8 border border-red-500/30">
+          <div className="w-20 h-20 rounded-lg bg-red-500/10 flex items-center justify-center mb-8 border border-red-500/30">
             <AlertCircle className="text-red-500" size={40} />
           </div>
-          <h2 className="text-2xl font-medium tracking-tight mb-4 text-foreground">Project Data Collision</h2>
-          <p className="text-slate-500 max-w-md mb-10 leading-relaxed">The Command Center encountered a structural data invariant (Error #31). Clearing the project cache will restore standard operating parameters.</p>
+          <h2 className="text-2xl font-medium tracking-tight mb-4 text-white">Project Data Collision</h2>
+          <p className="text-white max-w-md mb-10 leading-relaxed">The Command Center encountered a structural data invariant (Error #31). Clearing the project cache will restore standard operating parameters.</p>
           <button
             onClick={() => { localStorage.clear(); window.location.reload(); }}
             className="px-10 py-4 bg-primary text-white rounded-lg font-medium tracking-wide shadow-sm hover:bg-primary-hover transition-all"
@@ -69,7 +69,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 text-slate-400 hover:text-white transition-colors"
+      className="p-2 text-white hover:text-white transition-colors"
       title="Toggle Theme"
     >
       {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
@@ -248,10 +248,10 @@ function MainApp() {
                 <h1 className="text-xs font-medium uppercase tracking-wide text-primary">
                   {safeString(activeProject.name)}
                 </h1>
-                <div className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+                <div className="flex items-center gap-2 text-sm font-medium text-white">
                   <span>{safeString(activePage.name)}</span>
-                  <ChevronRight size={14} className="text-slate-400" />
-                  <span className="text-slate-500">
+                  <ChevronRight size={14} className="text-white" />
+                  <span className="text-white">
                     {safeString(view === 'discovery' ? 'Discovery' : view === 'settings' ? 'Settings' : view === 'market' ? 'Market' : view === 'vault' ? 'Library' : 'Audit')}
                   </span>
                 </div>
@@ -262,7 +262,7 @@ function MainApp() {
               {!isPreviewMode && (view === 'audit' || view === 'discovery') && auditResult && (
                 <div className="flex items-center gap-4 px-4 py-1.5 bg-surface border border-border rounded-lg">
                   <div className="flex flex-col items-center">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Score</span>
+                    <span className="text-[10px] font-bold text-white uppercase tracking-wider">Score</span>
                     <span className="text-lg font-bold text-primary">{safeString(auditResult.proposedHeuristics?.total || 0)}</span>
                   </div>
                   <div className="w-px h-6 bg-border" />
@@ -278,17 +278,17 @@ function MainApp() {
                   <>
                     <button
                       onClick={() => setIsPredictionMode(!isPredictionMode)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 border transition-all ${isPredictionMode ? 'bg-primary text-white border-primary' : 'bg-surface border-border text-slate-500 hover:text-[var(--text-primary)]'}`}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 border transition-all ${isPredictionMode ? 'bg-primary text-white border-primary' : 'bg-surface border-border text-white hover:text-white'}`}
                     >
                       <Activity size={14} /> Predict
                     </button>
-                    <button onClick={handleCapture} className="px-4 py-2 bg-surface border border-border rounded-lg text-xs font-medium text-slate-500 hover:text-[var(--text-primary)] transition-all flex items-center gap-2">
+                    <button onClick={handleCapture} className="px-4 py-2 bg-surface border border-border rounded-lg text-xs font-medium text-white hover:text-white transition-all flex items-center gap-2">
                       <Camera size={14} /> Capture
                     </button>
                     <button
                       onClick={() => startAudit(selectedFile || undefined)}
                       disabled={status === AppStatus.AUDITING || !selectedFile || !canRunAudit}
-                      className={`px-5 py-2 rounded-lg font-medium text-xs flex items-center gap-2 shadow-sm transition-all ${canRunAudit ? 'bg-primary hover:bg-primary-hover text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'}`}
+                      className={`px-5 py-2 rounded-lg font-medium text-xs flex items-center gap-2 shadow-sm transition-all ${canRunAudit ? 'bg-primary hover:bg-primary-hover text-white' : 'bg-slate-800 text-white cursor-not-allowed'}`}
                     >
                       {status === AppStatus.AUDITING ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />} Run Audit
                     </button>
@@ -296,7 +296,7 @@ function MainApp() {
                 )}
                 <button
                   onClick={togglePresentationMode}
-                  className={`p-2 rounded-lg border transition-all ${isPreviewMode ? 'bg-primary border-primary text-white' : 'bg-surface border-border text-slate-400 hover:text-[var(--text-primary)]'}`}
+                  className={`p-2 rounded-lg border transition-all ${isPreviewMode ? 'bg-primary border-primary text-white' : 'bg-surface border-border text-white hover:text-white'}`}
                   title="Presentation Mode"
                 >
                   {isPreviewMode ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -352,7 +352,7 @@ function MainApp() {
                         </div>
                       </div>
                       <p className="text-xs font-bold uppercase tracking-widest text-primary animate-pulse">{safeString(auditSteps[loadingStep]?.primary || "Processing")}</p>
-                      <p className="text-xs text-slate-500 mt-2">{safeString(auditSteps[loadingStep]?.secondary || "Please wait...")}</p>
+                      <p className="text-xs text-white mt-2">{safeString(auditSteps[loadingStep]?.secondary || "Please wait...")}</p>
                     </div>
                   )}
 
@@ -387,16 +387,16 @@ function MainApp() {
                       isPredictionMode={isPredictionMode}
                     />
                   ) : (
-                    <div className="h-[40vh] flex flex-col items-center justify-center opacity-40 text-center px-12 border-2 border-dashed border-border rounded-3xl m-8">
-                      <Layout size={48} className="mb-4 text-slate-400" />
-                      <h3 className="text-lg font-medium text-slate-500">Ready to Audit</h3>
-                      <p className="text-sm text-slate-400 mt-1">Capture or upload a layout to begin optimization</p>
+                    <div className="h-[40vh] flex flex-col items-center justify-center opacity-40 text-center px-12 border-2 border-dashed border-border rounded-lg m-8">
+                      <Layout size={48} className="mb-4 text-white" />
+                      <h3 className="text-lg font-medium text-white">Ready to Audit</h3>
+                      <p className="text-sm text-white mt-1">Capture or upload a layout to begin optimization</p>
                     </div>
                   )}
 
                   {auditResult && (
                     <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom duration-500">
-                      <button onClick={handleAcceptAudit} className="px-8 py-4 bg-primary text-white font-medium rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2">
+                      <button onClick={handleAcceptAudit} className="px-8 py-4 bg-primary text-white font-medium rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2">
                         <Sparkles size={18} /> Commit Optimization
                       </button>
                     </div>
@@ -419,18 +419,18 @@ function MainApp() {
       {showNewProjectModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowNewProjectModal(false)} />
-          <div className="relative w-full max-w-lg bg-surface border border-border rounded-2xl p-8 shadow-2xl animate-in zoom-in-95 duration-300">
-            <button onClick={() => setShowNewProjectModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-[var(--text-primary)]"><X size={20} /></button>
+          <div className="relative w-full max-w-lg bg-surface border border-border rounded-lg p-8 shadow-2xl animate-in zoom-in-95 duration-300">
+            <button onClick={() => setShowNewProjectModal(false)} className="absolute top-6 right-6 text-white hover:text-white"><X size={20} /></button>
             <h2 className="text-2xl font-semibold mb-1">New Project</h2>
-            <p className="text-slate-500 text-sm mb-8">Enter project details to initialize workspace</p>
+            <p className="text-white text-sm mb-8">Enter project details to initialize workspace</p>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2"><Target size={12} /> Project Name</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2"><Target size={12} /> Project Name</label>
                 <input type="text" value={newProject.name} onChange={(e) => setNewProject({ ...newProject, name: e.target.value })} placeholder="e.g., Emaar Beachfront" className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2"><Globe size={12} /> Root Domain</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2"><Globe size={12} /> Root Domain</label>
                 <input type="text" value={newProject.url} onChange={(e) => setNewProject({ ...newProject, url: e.target.value })} placeholder="https://..." className="w-full bg-background border border-border rounded-lg p-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" />
               </div>
             </div>
