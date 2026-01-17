@@ -1,0 +1,92 @@
+/* PSI Luxury Hub Premium Styles - Production Stable */
+
+.luxury-card-glow {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.08), inset 0 0 10px rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(145deg, rgba(2, 6, 23, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+  backdrop-filter: blur(20px);
+}
+
+.luxury-card-glow:hover {
+  box-shadow: 0 0 35px rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+.premium-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.premium-scrollbar::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+.premium-scrollbar::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 10px;
+}
+
+.premium-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #F4CF47;
+}
+
+.luxury-text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-obsidian {
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-viewport-frame {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Cinematic Curtain Effect */
+@keyframes curtain-reveal {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+.curtain-overlay {
+  position: fixed;
+  inset: 0;
+  background: #020617;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.curtain-overlay.active {
+  animation: curtain-reveal 1.2s cubic-bezier(0.85, 0, 0.15, 1) forwards;
+}
+
+/* Presentation Mode UI Shifts */
+.presentation-mode-transition {
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Interactive Slider Hover State */
+.cursor-col-resize:active {
+  cursor: grabbing;
+}
+
+/* Report Styles */
+.bg-radial-gradient {
+  background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1), transparent);
+}
+
+@media print {
+  #luxury-report-container {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 20mm;
+  }
+}

@@ -1,26 +1,32 @@
 {
-  "name": "real-estate-ui/ux-hub",
-  "private": true,
-  "version": "0.0.0",
+  "name": "psi-ux-hub",
+  "version": "1.0.0",
+  "description": "PSI Luxury Real Estate UX Optimization Hub",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
-    "@google/genai": "^1.36.0",
-    "@google/generative-ai": "^0.24.1",
-    "clsx": "^2.1.1",
-    "firebase": "^12.8.0",
-    "lucide-react": "^0.562.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "@google/genai": "^1.37.0",
+    "@types/html2canvas": "^0.5.35",
+    "@types/jspdf": "^1.3.3",
+    "file-saver": "^2.0.5",
+    "firebase": "10.8.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.0.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.460.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
+    "vite": "^5.1.4"
   }
 }

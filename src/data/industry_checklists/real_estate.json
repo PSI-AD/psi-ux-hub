@@ -1,0 +1,32 @@
+{
+  "industry": "Real Estate",
+  "version": "1.0.0",
+  "groups": [
+    {
+      "name": "Architectural Core Pages",
+      "items": [
+        { "id": "listings-grid", "label": "Interactive Property Listings Grid", "type": "must-have", "description": "High-performance grid with AJAX filtering." },
+        { "id": "property-details", "label": "Dynamic Property Detail View", "type": "must-have", "description": "SEO-optimized pages for individual units." },
+        { "id": "developer-showcase", "label": "Developer/Project Inventory Hub", "type": "recommended", "description": "Dedicated section for Emaar, Nakheel, etc." },
+        { "id": "off-plan-hub", "label": "Off-Plan Launch Portal", "type": "must-have", "description": "Focused UI for new developments and payment plans." }
+      ]
+    },
+    {
+      "name": "Lead & Conversion Functions",
+      "items": [
+        { "id": "mortgage-calc", "label": "Mortgage & ROI Calculator", "type": "recommended", "description": "Tooling to justify investment numbers." },
+        { "id": "whatsapp-bridge", "label": "Floating WhatsApp Lead Bridge", "type": "must-have", "description": "Instant agent connection for high-intent users." },
+        { "id": "floorplan-viewer", "label": "Interactive Floorplan Viewer", "type": "advanced", "description": "2D/3D visualization of unit layouts." },
+        { "id": "map-search", "label": "Polygon Map-Based Search", "type": "advanced", "description": "Geographical discovery of properties." }
+      ]
+    },
+    {
+      "name": "Trust & Authority",
+      "items": [
+        { "id": "rera-license", "label": "RERA / Government Verified Badges", "type": "must-have", "description": "Legal transparency signaling for Dubai/UAE." },
+        { "id": "agent-profiles", "label": "Certified Agent Portfolio Pages", "type": "recommended", "description": "Individual pages for broker authority." },
+        { "id": "area-guides", "label": "Community & Lifestyle Area Guides", "type": "recommended", "description": "Content-driven trust and local expertise." }
+      ]
+    }
+  ]
+}

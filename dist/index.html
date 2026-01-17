@@ -1,28 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PSI Optimization Hub</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #0f172a;
-            color: white;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSI UX Optimization Hub | Platinum Standard</title>
+  
+  <!-- NUCLEAR BYPASS CSP: Comprehensive policy to eliminate CORS/CSP deadlock -->
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'unsafe-inline' 'unsafe-eval'; img-src * data: blob:; style-src * 'unsafe-inline'; font-src * data:;">
+  
+  <!-- Priority System Utilities -->
+  <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js" crossorigin="anonymous"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&display=swap" rel="stylesheet">
+  
+  <script crossorigin="anonymous">
+    window.Babel = window.Babel || null;
+    const initTailwind = () => {
+      if (window.tailwind) {
+        window.tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                'psi-gold': '#D4AF37',
+                'obsidian': '#020617',
+                'slate-900': '#0f172a',
+              },
+              fontFamily: {
+                luxury: ['Playfair Display', 'serif'],
+                sans: ['Inter', 'sans-serif'],
+                mono: ['Geist Mono', 'monospace'],
+              }
+            }
+          }
+        };
+      } else {
+        setTimeout(initTailwind, 50);
+      }
+    };
+    initTailwind();
+  </script>
+  
+  <style>
+    :root {
+      --bg-obsidian: #020617;
+      --psi-gold: #D4AF37;
+    }
+    body {
+      background-color: var(--bg-obsidian);
+      color: white;
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #020617; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--psi-gold); }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+  
 
-        * {
-            box-sizing: border-box;
-        }
-    </style>
-  <script type="module" crossorigin src="/assets/index-PHgSfH3S.js"></script>
+<link rel="stylesheet" href="/index.css">
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
+    "@google/genai": "https://esm.sh/@google/genai@1.37.0",
+    "html2canvas": "https://esm.sh/html2canvas@1.4.1",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "firebase/app": "https://esm.sh/firebase@10.8.0/app",
+    "firebase/storage": "https://esm.sh/firebase@10.8.0/storage",
+    "firebase/firestore": "https://esm.sh/firebase@10.8.0/firestore",
+    "file-saver": "https://esm.sh/file-saver@2.0.5",
+    "jszip": "https://esm.sh/jszip@3.10.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "firebase/": "https://esm.sh/firebase@^12.8.0/",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/assets/index-Cd3dn1iu.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-hYRyuBsd.css">
 </head>
-
 <body>
-    <div id="root"></div>
+  <div id="root"></div>
 </body>
-
 </html>

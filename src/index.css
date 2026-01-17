@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Manual Toggle will override this via class="dark" */
+    color-scheme: light dark;
+
+    /* Light Mode (Default) */
+    --bg-primary: #FFFFFF;
+    --bg-surface: #F8F9FA;
+    --border-color: #E0E0E0;
+    --text-primary: #1F1F1F;
+    --text-secondary: #4B5563;
+  }
+
+  .dark {
+    /* Dark Mode Overrides */
+    --bg-primary: #000000;
+    --bg-surface: #0B0B0B;
+    --border-color: #1E1E1E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #9CA3AF;
+  }
+}
+
+body {
+  @apply bg-background text-[var(--text-primary)] font-sans;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full hover:bg-neutral-500;
+}

@@ -1,0 +1,8 @@
+{
+  "name": "PSI UX Hub",
+  "description": "A professional real estate optimization dashboard for Property Shop Investment, providing AI-driven UX audits and deployable React/Tailwind code fixes.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
