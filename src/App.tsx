@@ -21,10 +21,19 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 /**
  * Global Safety Boundary: Catches React #31 Errors and UI Invariants.
  */
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: ReactNode }) {
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false };
+
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
   }
   static getDerivedStateFromError(_: Error) { return { hasError: true }; }
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
