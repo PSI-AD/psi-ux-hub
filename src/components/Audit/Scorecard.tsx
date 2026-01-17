@@ -54,8 +54,20 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
     { key: 'mobileResponsiveness', label: 'Mobile UX', max: 10 },
   ];
 
+  const safeString = (val: any): string => {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object') {
+      try {
+        return JSON.stringify(val);
+      } catch (e) {
+        return '';
+      }
+    }
+    return String(val);
+  };
+
   return (
-    <div className="bg-surface border border-border rounded-lg p-12 space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 shadow-sm">
+    <div className="bg-surface border border-border rounded-lg p-12 space-y-16 shadow-sm">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
         <div className="space-y-4 max-w-sm text-center lg:text-left">
           <h3 className="text-3xl font-black text-white uppercase tracking-tighter font-luxury">Heuristic Diagnostic</h3>
@@ -64,7 +76,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
           </p>
           <div className="flex items-center gap-3 pt-4 justify-center lg:justify-start">
             <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-lg text-primary border border-primary/20 text-[9px] font-black uppercase">
-              <TrendingUp size={12} /> +{(proposed.total || 0) - (current.total || 0)}% Improvement
+              <TrendingUp size={12} /> +{safeString((proposed.total || 0) - (current.total || 0))}% Improvement
             </div>
           </div>
         </div>
@@ -92,19 +104,19 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
               const isCritical = curVal < (cat.max * 0.6);
 
               return (
-                <div key={cat.key} className="space-y-2">
+                <div key={safeString(cat.key)} className="space-y-2">
                   <div className="flex justify-between items-end">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white">{cat.label}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white">{safeString(cat.label)}</span>
                       {isCritical && (
                         <span className="px-2 py-0.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-lg text-[7px] font-black uppercase">Critical Risk</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-white text-[10px]">{curVal}</span>
+                      <span className="text-white text-[10px]">{safeString(curVal)}</span>
                       <ArrowRight size={10} className="text-white" />
-                      <span className="text-primary text-[10px] font-bold">{propVal}</span>
-                      <span className="text-white text-[8px]">/ {cat.max}</span>
+                      <span className="text-primary text-[10px] font-bold">{safeString(propVal)}</span>
+                      <span className="text-white text-[8px]">/ {safeString(cat.max)}</span>
                     </div>
                   </div>
                   <div className="w-full h-1 bg-surface border border-border rounded-lg overflow-hidden flex">
@@ -132,13 +144,13 @@ export const Scorecard: React.FC<ScorecardProps> = ({ current, proposed, rationa
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-primary">{item.category}</span>
-                      <span className="text-[8px] font-black text-emerald-500">+{item.impactScore}% Impact</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-primary">{safeString(item.category)}</span>
+                      <span className="text-[8px] font-black text-emerald-500">+{safeString(item.impactScore)}% Impact</span>
                     </div>
-                    <p className="text-[11px] text-white leading-relaxed italic">"{item.currentObservation}"</p>
+                    <p className="text-[11px] text-white leading-relaxed italic">"{safeString(item.currentObservation)}"</p>
                     <div className="flex items-center gap-2 pt-1">
                       <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                      <p className="text-[10px] text-white font-bold">{item.proposedImprovement}</p>
+                      <p className="text-[10px] text-white font-bold">{safeString(item.proposedImprovement)}</p>
                     </div>
                   </div>
                 </div>

@@ -426,9 +426,9 @@ function MainApp() {
       </main>
 
       {showNewProjectModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowNewProjectModal(false)} />
-          <div className="relative w-full max-w-lg bg-surface border border-border rounded-lg p-8 shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="relative w-full max-w-lg bg-surface border border-border rounded-lg p-8 shadow-2xl">
             <button onClick={() => setShowNewProjectModal(false)} className="absolute top-6 right-6 text-white hover:text-white"><X size={20} /></button>
             <h2 className="text-2xl font-semibold mb-1 text-white">New Project</h2>
             <p className="text-white text-sm mb-8">Enter project details to initialize workspace</p>
