@@ -131,7 +131,7 @@ export const ProjectSettings: React.FC<ProjectSettingsProps> = ({
                 onClick={() => logoInputRef.current?.click()}
               >
                 {project.brand?.logo ? (
-                  <img src={project.brand.logo} className="w-full h-full object-contain" alt="Logo" />
+                  <img src={safeString(project.brand.logo)} className="w-full h-full object-contain" alt="Logo" />
                 ) : (
                   <ShieldCheck className="text-primary" size={40} />
                 )}
@@ -384,8 +384,8 @@ export const ProjectSettings: React.FC<ProjectSettingsProps> = ({
                         <div key={safeString(item.id)} className="bg-surface border border-border p-5 rounded-xl group/item hover:border-primary/30 transition-all">
                           <div className="flex justify-between items-start mb-3">
                             <span className={`px-2 py-0.5 rounded-[4px] text-[7px] font-black uppercase tracking-tighter border ${item.type === 'must-have' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
-                                item.type === 'recommended' ? 'bg-primary/10 text-primary border-primary/20' :
-                                  'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                              item.type === 'recommended' ? 'bg-primary/10 text-primary border-primary/20' :
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20'
                               }`}>
                               {safeString(item.type || "unknown")}
                             </span>

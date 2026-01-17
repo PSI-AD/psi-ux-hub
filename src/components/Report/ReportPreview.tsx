@@ -113,11 +113,11 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmark
     <div id="luxury-report-container" className="bg-[#020617] text-white p-20 font-sans min-h-screen">
       {/* 1. TITLE PAGE */}
       <section className="h-[900px] flex flex-col items-center justify-center border-b border-white/10 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-radial-gradient from-psi-gold/5 via-transparent to-transparent opacity-50" />
+        <div className="absolute inset-0 bg-black/5 opacity-50" />
         <div className="w-48 h-48 rounded-[3rem] bg-psi-gold/10 flex items-center justify-center border border-psi-gold/30 shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-12">
-          {project.brand.logo ? <img src={project.brand.logo} className="w-24 h-24 object-contain" /> : <ShieldCheck className="text-psi-gold" size={64} />}
+          {project.brand.logo ? <img src={safeString(project.brand.logo)} className="w-24 h-24 object-contain" /> : <ShieldCheck className="text-psi-gold" size={64} />}
         </div>
-        <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 luxury-text-gradient">Luxury Transformation</h1>
+        <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 text-white">Luxury Transformation</h1>
         <p className="text-2xl font-luxury text-psi-gold italic mb-12">Architectural UX Synthesis & Market Optimization</p>
         <div className="h-px w-32 bg-psi-gold/30 mb-12" />
         <div className="space-y-2">
@@ -301,7 +301,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({ project, benchmark
           <Zap size={32} />
         </div>
         <div className="space-y-4">
-          <h3 className="text-4xl font-black uppercase tracking-tighter luxury-text-gradient">Ready for Implementation</h3>
+          <h3 className="text-4xl font-black uppercase tracking-tighter text-white">Ready for Implementation</h3>
           <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed">The proposed luxury vision is backed by market benchmarking and brand-faithful synthesis. All code fixes are ready for production deployment via the Agency Pro Vault.</p>
         </div>
         <p className="text-[10px] font-black uppercase tracking-[1em] text-slate-800 pt-20">Property Shop Investment Architectural Control Hub</p>

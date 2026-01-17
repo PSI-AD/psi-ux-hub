@@ -213,7 +213,7 @@ export const PresentationView: React.FC<PresentationViewProps> = ({ project, onC
                   <Award className="text-psi-gold" size={24} />
                 </div>
               </div>
-              <h1 className="text-7xl font-black tracking-tighter uppercase mb-6 luxury-text-gradient leading-tight">Architectural<br />Sovereignty</h1>
+              <h1 className="text-7xl font-black tracking-tighter uppercase mb-6 text-white leading-tight">Architectural<br />Sovereignty</h1>
               <p className="text-xl font-luxury text-psi-gold italic mb-16 opacity-80 max-w-2xl leading-relaxed">
                 A scientific approach to luxury real estate optimization, bridging the gap between legacy friction and predictive conversion.
               </p>

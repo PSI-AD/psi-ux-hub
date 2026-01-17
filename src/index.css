@@ -2,24 +2,23 @@
 
 @layer base {
   :root {
-    /* Manual Toggle will override this via class="dark" */
-    color-scheme: light dark;
+    color-scheme: dark;
 
-    /* Light Mode (Default) */
-    --bg-primary: #FFFFFF;
-    --bg-surface: #F8F9FA;
-    --border-color: #E0E0E0;
-    --text-primary: #1F1F1F;
-    --text-secondary: #4B5563;
+    /* Enforcing Pure Black AI Studio Aesthetic */
+    --bg-primary: #000000;
+    --bg-surface: #000000;
+    --border-color: #1E1E1E;
+    --text-primary: #FFFFFF;
+    --text-secondary: #AAAAAA;
+    /* High contrast secondary */
   }
 
   .dark {
-    /* Dark Mode Overrides */
     --bg-primary: #000000;
-    --bg-surface: #0B0B0B;
+    --bg-surface: #000000;
     --border-color: #1E1E1E;
     --text-primary: #FFFFFF;
-    --text-secondary: #9CA3AF;
+    --text-secondary: #AAAAAA;
   }
 }
 
