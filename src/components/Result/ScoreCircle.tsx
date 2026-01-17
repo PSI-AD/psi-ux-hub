@@ -26,9 +26,9 @@ export const ScoreCircle: React.FC<ScoreCircleProps> = ({ score, label }) => {
             className="transition-all duration-1000 ease-out"
           />
         </svg>
-        <span className={`absolute text-sm font-bold tracking-tight ${color}`}>{score}</span>
+        <span className={`absolute text-sm font-bold tracking-tight ${color}`}>{String(score)}</span>
       </div>
-      <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-wide">{String(label)}</span>
     </div>
   );
 };

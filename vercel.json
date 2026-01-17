@@ -1,0 +1,9 @@
+{
+    "framework": "vite",
+    "buildCommand": "npm run build",
+    "installCommand": "npm install",
+    "env": {
+        "VERCEL_FORCE_NO_BUILD_CACHE": "1",
+        "NPM_CONFIG_PRODUCTION": "false"
+    }
+}
