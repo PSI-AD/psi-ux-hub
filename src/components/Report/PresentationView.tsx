@@ -361,8 +361,8 @@ export const PresentationView: React.FC<PresentationViewProps> = ({ project, onC
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {project.uiVault?.slice(0, 8).map((comp: UIComponent) => (
-                  <div key={comp.id} className="glass-card p-8 group hover:border-psi-gold/40 transition-all text-center rounded-[2rem]">
-                    <div className="w-16 h-16 bg-slate-950 rounded-2xl mx-auto mb-6 flex items-center justify-center text-psi-gold border border-white/5 group-hover:border-psi-gold/30">
+                  <div key={comp.id} className="glass-card p-8 group hover:border-psi-gold/40 transition-all text-center rounded-lg">
+                    <div className="w-16 h-16 bg-slate-950 rounded-lg mx-auto mb-6 flex items-center justify-center text-psi-gold border border-white/5 group-hover:border-psi-gold/30">
                       <Grid size={24} />
                     </div>
                     <h4 className="text-[11px] font-black uppercase tracking-widest text-white mb-2">{safeString(comp.name)}</h4>
@@ -376,7 +376,7 @@ export const PresentationView: React.FC<PresentationViewProps> = ({ project, onC
                   )}
               </div>
 
-              <div className="bg-psi-gold/5 border border-psi-gold/20 p-12 rounded-[3rem] text-center space-y-8 max-w-4xl mx-auto">
+              <div className="bg-psi-gold/5 border border-psi-gold/20 p-12 rounded-lg text-center space-y-8 max-w-4xl mx-auto">
                 <Award size={48} className="text-psi-gold mx-auto" />
                 <div className="space-y-4">
                   <h3 className="text-3xl font-black uppercase tracking-tighter">Retention Strategy</h3>
@@ -386,7 +386,7 @@ export const PresentationView: React.FC<PresentationViewProps> = ({ project, onC
                 </div>
                 <button
                   onClick={onClose}
-                  className="px-10 py-4 bg-psi-gold text-obsidian rounded-xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                  className="px-10 py-4 bg-psi-gold text-obsidian rounded-lg font-black text-[10px] uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all"
                 >
                   Commit to Optimization Retainer
                 </button>

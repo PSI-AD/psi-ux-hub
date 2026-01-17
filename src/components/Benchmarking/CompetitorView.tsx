@@ -8,7 +8,17 @@ interface CompetitorViewProps {
 }
 
 export const CompetitorView = ({ project, benchmarks }: CompetitorViewProps) => {
-  const safeVal = (val: any) => String(val || '');
+  const safeString = (val: any): string => {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object') {
+      try {
+        return JSON.stringify(val);
+      } catch (e) {
+        return '';
+      }
+    }
+    return String(val);
+  };
   const competitors = project.competitors || [];
 
   return (
@@ -19,12 +29,12 @@ export const CompetitorView = ({ project, benchmarks }: CompetitorViewProps) => 
             <h2 className="text-3xl font-bold text-white tracking-tight uppercase flex items-center gap-4">
               <BarChart3 className="text-primary" size={32} /> Market Benchmark Analytics
             </h2>
-            <p className="text-white text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Competitive UX positioning for {safeVal(project.name)}</p>
+            <p className="text-white text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Competitive UX positioning for {safeString(project.name)}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="px-4 py-2 bg-surface rounded-lg border border-border flex items-center gap-2">
               <Target size={14} className="text-primary" />
-              <span className="text-[10px] font-bold uppercase text-primary">{safeVal(competitors.length)} Benchmarks Active</span>
+              <span className="text-[10px] font-bold uppercase text-primary">{safeString(competitors.length)} Benchmarks Active</span>
             </div>
           </div>
         </header>
@@ -36,16 +46,16 @@ export const CompetitorView = ({ project, benchmarks }: CompetitorViewProps) => 
             { category: 'Ease of Navigation', clientScore: 72, competitorAvg: 70 },
             { category: 'High-End Aesthetic', clientScore: 55, competitorAvg: 90 }
           ] as BenchmarkScore[]).map((score) => (
-            <div key={safeVal(score.category)} className="bg-surface border border-border p-8 space-y-6 relative overflow-hidden group hover:border-primary/50 transition-all rounded-lg">
+            <div key={safeString(score.category)} className="bg-surface border border-border p-8 space-y-6 relative overflow-hidden group hover:border-primary/50 transition-all rounded-lg">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <TrendingUp size={48} className="text-primary" />
               </div>
-              <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">{safeVal(score.category)}</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white">{safeString(score.category)}</h4>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase text-white">Client Portfolio</span>
-                  <span className="text-xl font-bold text-primary">{safeVal(score.clientScore)}%</span>
+                  <span className="text-xl font-bold text-primary">{safeString(score.clientScore)}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-background rounded-lg overflow-hidden border border-border">
                   <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${score.clientScore}%` }} />
@@ -53,7 +63,7 @@ export const CompetitorView = ({ project, benchmarks }: CompetitorViewProps) => 
 
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-[10px] font-bold uppercase text-white">Market Avg</span>
-                  <span className="text-sm font-bold text-white">{safeVal(score.competitorAvg)}%</span>
+                  <span className="text-sm font-bold text-white">{safeString(score.competitorAvg)}%</span>
                 </div>
                 <div className="w-full h-1 bg-background rounded-lg overflow-hidden opacity-50 border border-border">
                   <div className="h-full bg-white transition-all duration-1000" style={{ width: `${score.competitorAvg}%` }} />
@@ -77,13 +87,13 @@ export const CompetitorView = ({ project, benchmarks }: CompetitorViewProps) => 
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {(competitors).map(url => (
-              <div key={safeVal(url)} className="bg-surface border border-border p-6 flex items-center justify-between group hover:border-primary/50 transition-all rounded-lg">
+              <div key={safeString(url)} className="bg-surface border border-border p-6 flex items-center justify-between group hover:border-primary/50 transition-all rounded-lg">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-background rounded-lg border border-border flex items-center justify-center text-white group-hover:text-primary transition-colors">
                     <Globe size={20} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-white uppercase tracking-wider">{safeVal(url).replace('https://', '').replace('www.', '')}</p>
+                    <p className="text-[10px] font-bold text-white uppercase tracking-wider">{safeString(url).replace('https://', '').replace('www.', '')}</p>
                     <span className="text-[8px] text-white font-mono uppercase tracking-tighter">Live Domain Link</span>
                   </div>
                 </div>
