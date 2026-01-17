@@ -54,7 +54,13 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
 
 const safeString = (val: any): string => {
   if (val === null || val === undefined) return '';
-  if (typeof val === 'object') return JSON.stringify(val);
+  if (typeof val === 'object') {
+    try {
+      return JSON.stringify(val);
+    } catch (e) {
+      return '';
+    }
+  }
   return String(val);
 };
 

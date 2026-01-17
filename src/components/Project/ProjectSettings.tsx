@@ -24,7 +24,13 @@ type SettingsTab = 'brand' | 'market' | 'analytics' | 'standards' | 'architectur
 
 const safeString = (val: any): string => {
   if (val === null || val === undefined) return '';
-  if (typeof val === 'object') return JSON.stringify(val);
+  if (typeof val === 'object') {
+    try {
+      return JSON.stringify(val);
+    } catch (e) {
+      return '';
+    }
+  }
   return String(val);
 };
 

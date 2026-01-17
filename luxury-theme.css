@@ -1,61 +1,59 @@
 /* PSI Luxury Hub Premium Styles - Production Stable */
 
 .luxury-card-glow {
-  box-shadow: 0 0 25px rgba(212, 175, 55, 0.08), inset 0 0 10px rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(145deg, rgba(2, 6, 23, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
-  backdrop-filter: blur(20px);
+  border: 1px solid #1E1E1E;
+  background: #000000;
 }
 
 .luxury-card-glow:hover {
-  box-shadow: 0 0 35px rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.4);
+  border: 1px solid #333333;
 }
 
 .premium-scrollbar::-webkit-scrollbar {
-  width: 3px;
+  width: 8px;
 }
 
 .premium-scrollbar::-webkit-scrollbar-track {
-  background: #020617;
+  background: #000000;
 }
 
 .premium-scrollbar::-webkit-scrollbar-thumb {
-  background: #D4AF37;
-  border-radius: 10px;
+  background: #1E1E1E;
+  border-radius: 8px;
 }
 
 .premium-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #F4CF47;
+  background: #333333;
 }
 
 .luxury-text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #D4AF37 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #FFFFFF;
 }
 
 .glass-obsidian {
-  background: rgba(2, 6, 23, 0.7);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #000000;
+  border: 1px solid #1E1E1E;
 }
 
 .ai-viewport-frame {
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.12);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid #1E1E1E;
 }
 
 /* Cinematic Curtain Effect */
 @keyframes curtain-reveal {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-100%); }
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-100%);
+  }
 }
 
 .curtain-overlay {
   position: fixed;
   inset: 0;
-  background: #020617;
+  background: #000000;
   z-index: 9999;
   pointer-events: none;
   display: flex;
@@ -79,7 +77,7 @@
 
 /* Report Styles */
 .bg-radial-gradient {
-  background: radial-gradient(circle at center, rgba(212, 175, 55, 0.1), transparent);
+  background: #000000;
 }
 
 @media print {
