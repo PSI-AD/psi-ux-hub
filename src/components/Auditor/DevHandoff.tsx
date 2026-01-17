@@ -92,7 +92,7 @@ export const DevHandoff: React.FC<DevHandoffProps> = ({ block, onClose }) => {
                      </div>
                   </div>
                   <pre className="flex-1 bg-[#0a0a0b] p-8 rounded-3xl overflow-auto custom-scrollbar border border-white/5 font-mono text-xs leading-relaxed text-emerald-400">
-                     <code>{block.code}</code>
+                     <code>{safeString(block.code)}</code>
                   </pre>
                </div>
             </div>
